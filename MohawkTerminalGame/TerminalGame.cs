@@ -10,9 +10,9 @@ public class TerminalGame
     /// Run once before Execute begins
     public void Setup()
     {
-        Program.TerminalExecuteMode = TerminalExecuteMode.ExecuteLoop;
+        Program.TerminalExecuteMode = TerminalExecuteMode.ExecuteTime;
         Program.TerminalInputMode = TerminalInputMode.EnableInputDisableReadLine;
-
+        Program.TargetFPS = 60;
         Terminal.SetTitle("Title");
 
         FieldView.ViewField();
@@ -25,7 +25,22 @@ public class TerminalGame
     //               Code must finish within the alloted time frame for this to work well.
     public void Execute()
     {
-        FieldView.UpdateField();
-    }
+        int moveX = 0;
+        int moveY = 0;
 
+        if (Input.IsKeyPressed(ConsoleKey.RightArrow))
+            moveX++;
+        if (Input.IsKeyPressed(ConsoleKey.LeftArrow))
+            moveX--;
+        if (Input.IsKeyPressed(ConsoleKey.DownArrow))
+            moveY++;
+        if (Input.IsKeyPressed(ConsoleKey.UpArrow))
+            moveY--;
+
+
+        if (moveX != 0 || moveY != 0)
+        {
+            FieldView.MoveSelection(moveX, moveY);
+        }
+    }
 }
