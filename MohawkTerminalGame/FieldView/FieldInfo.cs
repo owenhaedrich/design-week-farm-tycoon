@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MohawkTerminalGame
 {
-    public class FieldInfoBar
+    public class FieldInfo
     {
         // Game variables
         static int money = 10000;
