@@ -9,7 +9,7 @@ public class TerminalGame
     {
         Program.TerminalExecuteMode = TerminalExecuteMode.ExecuteTime;
         Program.TerminalInputMode = TerminalInputMode.EnableInputDisableReadLine;
-        Program.TargetFPS = 60;
+        Program.TargetFPS = 15;
         Terminal.CursorVisible = false;
         Terminal.SetTitle("Title");
 
@@ -52,7 +52,12 @@ public class TerminalGame
         {
             FieldView.PlaceTile(TileType.Cow);
         }
+        else if (Input.IsKeyPressed(ConsoleKey.D3))
+        {
+            FieldView.PlaceTile(TileType.Chicken);
+        }
 
+        // Hide cursor and move it out of the way
         Terminal.BackgroundColor = ConsoleColor.Black;
         Terminal.ForegroundColor = ConsoleColor.Black;
         Terminal.SetCursorPosition(30, 11);

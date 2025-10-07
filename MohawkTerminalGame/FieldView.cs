@@ -8,10 +8,9 @@ namespace MohawkTerminalGame
     {
         Dirt,
         Wheat,
-        Cow
+        Cow,
+        Chicken
     }
-
-    // Manages the field view. There is a logical grid that determines what the visuals should be.
     public class FieldView
     {
         // Visual elements
@@ -21,33 +20,35 @@ namespace MohawkTerminalGame
         // Game elements
         static int selectionX = 0;
         static int selectionY = 0;
-        internal static TerminalGridWithColor field = new(30, 10, dirt);
-        internal static LogicalGrid logicalGrid = new(15, 5, 2, 2); // For now each logical tile is 2x2 in visual grid
+        static int previousSelectionX = 0;
+        static int previousSelectionY = 0;
+        internal static TerminalGridWithColor field = new(Viewport.width, Viewport.height, dirt);
+        internal static LogicalGrid logicalGrid = new(Viewport.width/2, Viewport.height/2, 2, 2);
+
+        // Initialization
+        public static void ViewField()
+        {
+            SyncVisualWithLogical();
+            ApplyHighlight();
+            field.ClearWrite();
+        }
 
         // Map tile types to visual representations
         static ColoredText GetVisualForTileType(TileType tileType)
         {
-            // Use a traditional switch statement with case/break
             switch (tileType)
             {
                 case TileType.Dirt:
                     return dirt;
                 case TileType.Wheat:
-                    return new ColoredText("w", ConsoleColor.Yellow, ConsoleColor.Green); ;
+                    return new ColoredText("w", ConsoleColor.Yellow, ConsoleColor.Green);
                 case TileType.Cow:
                     return new ColoredText("C", ConsoleColor.White, ConsoleColor.Black);
+                case TileType.Chicken:
+                    return new ColoredText("c", ConsoleColor.Yellow, ConsoleColor.DarkYellow);
                 default:
                     return dirt;
             }
-        }
-
-        public static void ViewField()
-        {
-            // Sync visual grid with logical grid
-            SyncVisualWithLogical();
-            // Reapply highlight after sync
-            ApplyHighlight();
-            field.ClearWrite();
         }
 
         static void SyncVisualWithLogical()
@@ -60,7 +61,6 @@ namespace MohawkTerminalGame
                     var visual = GetVisualForTileType(space.TileType);
                     var (visualX, visualY) = logicalGrid.LogicalToVisual(logicalX, logicalY);
 
-                    // Fill the entire visual tile
                     for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
                     {
                         for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
@@ -77,7 +77,6 @@ namespace MohawkTerminalGame
         {
             var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
 
-            // Highlight the visual tile
             for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
             {
                 for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
@@ -87,30 +86,43 @@ namespace MohawkTerminalGame
             }
         }
 
-        public static void MoveSelection(int x, int y)
+        // Remove highlight from the previous selection by restoring the underlying tile
+        static void RemoveHighlight()
         {
-            // Remove current highlight (redrawing the tile)
-            var currentSpace = logicalGrid.GetSpace(selectionX, selectionY);
-            var visual = GetVisualForTileType(currentSpace.TileType);
-            var (oldVisualX, oldVisualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
+            var (visualX, visualY) = logicalGrid.LogicalToVisual(previousSelectionX, previousSelectionY);
+            var previousSpace = logicalGrid.GetSpace(previousSelectionX, previousSelectionY);
+            var visual = GetVisualForTileType(previousSpace.TileType);
 
             for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
             {
                 for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
                 {
-                    field.Poke(oldVisualX + xOffset, oldVisualY + yOffset, visual);
+                    field.Poke(visualX + xOffset, visualY + yOffset, visual);
                 }
             }
+        }
 
-            // Update selection position (logical coordinates)
+        public static void MoveSelection(int x, int y)
+        {
+            // Store previous position before updating
+            previousSelectionX = selectionX;
+            previousSelectionY = selectionY;
+
+            // Update selection position
             selectionX += x;
             selectionY += y;
 
-            // Clamp selection in logical grid
+            // Clamp selection
             selectionX = Math.Clamp(selectionX, 0, logicalGrid.Width - 1);
             selectionY = Math.Clamp(selectionY, 0, logicalGrid.Height - 1);
 
-            ApplyHighlight();
+            // Only update if position actually changed
+            if (selectionX != previousSelectionX || selectionY != previousSelectionY)
+            {
+                // Remove old highlight and apply new one
+                RemoveHighlight();
+                ApplyHighlight();
+            }
         }
 
         public static void PlaceTile(TileType tileType)
@@ -118,7 +130,8 @@ namespace MohawkTerminalGame
             // Update logical grid at current selection
             logicalGrid.SetTileType(selectionX, selectionY, tileType);
 
-            // Draw tile on the visual grid
+            // The highlight will be automatically reapplied since we're using Poke
+            // which updates both the grid and the display
             var visual = GetVisualForTileType(tileType);
             var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
 
@@ -130,11 +143,11 @@ namespace MohawkTerminalGame
                 }
             }
 
-            // Reapply highlight (just overwrote it)
+            // Reapply highlight (the tile placement overwrote it)
             ApplyHighlight();
         }
     }
-
+    
     // Represents a single space on the logical grid
     public class GridSpace
     {
