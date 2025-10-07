@@ -9,7 +9,7 @@ public class TerminalGame
     {
         Program.TerminalExecuteMode = TerminalExecuteMode.ExecuteTime;
         Program.TerminalInputMode = TerminalInputMode.EnableInputDisableReadLine;
-        Program.TargetFPS = 15;
+        Program.TargetFPS = 20;
         Terminal.CursorVisible = false;
         Terminal.SetTitle("Title");
 

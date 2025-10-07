@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MohawkTerminalGame
 {
@@ -13,7 +9,7 @@ namespace MohawkTerminalGame
 
         public static void HideCursor()
         {
-            // Hide cursor and move it out of the way
+            // Hide cursor by moving it out of the way
             Terminal.BackgroundColor = ConsoleColor.Black;
             Terminal.ForegroundColor = ConsoleColor.Black;
             Terminal.SetCursorPosition(windowWidth, windowHeight);

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Numerics;
+using System.Collections.Generic;
 
 namespace MohawkTerminalGame
 {
@@ -28,8 +28,8 @@ namespace MohawkTerminalGame
         static int visualScaleY = 4;
 
         // Game elements
-        static int selectionX = 0;
-        static int selectionY = 0;
+        public static int selectionX = 0;
+        public static int selectionY = 0;
         static int previousSelectionX = 0;
         static int previousSelectionY = 0;
         internal static TerminalGridWithColor field = new(Viewport.windowWidth, Viewport.windowHeight, dirt);
@@ -129,9 +129,9 @@ namespace MohawkTerminalGame
             // Only update if position actually changed
             if (selectionX != previousSelectionX || selectionY != previousSelectionY)
             {
-                // Remove old highlight and apply new one
                 RemoveHighlight();
                 ApplyHighlight();
+                FieldInfoBar.OnSelectionChanged();
             }
         }
 
@@ -140,8 +140,6 @@ namespace MohawkTerminalGame
             // Update logical grid at current selection
             logicalGrid.SetTileType(selectionX, selectionY, tileType);
 
-            // The highlight will be automatically reapplied since we're using Poke
-            // which updates both the grid and the display
             var visual = GetVisualForTileType(tileType);
             var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
 
@@ -155,6 +153,37 @@ namespace MohawkTerminalGame
 
             // Reapply highlight (the tile placement overwrote it)
             ApplyHighlight();
+        }
+
+        public static GridSpace GetCurrentSelectedSpace()
+        {
+            return logicalGrid.GetSpace(selectionX, selectionY);
+        }
+
+        public static List<InteractionType> GetAvailableInteractions()
+        {
+            var space = GetCurrentSelectedSpace();
+            var interactions = new List<InteractionType>();
+
+            switch (space.TileType)
+            {
+                case TileType.Cow:
+                    interactions.Add(InteractionType.Feed);
+                    interactions.Add(InteractionType.Harvest);
+                    break;
+                case TileType.Chicken:
+                    interactions.Add(InteractionType.Feed);
+                    interactions.Add(InteractionType.Harvest);
+                    break;
+                case TileType.Wheat:
+                    interactions.Add(InteractionType.Harvest);
+                    break;
+                case TileType.Dirt:
+                    // No interactions for dirt
+                    break;
+            }
+
+            return interactions;
         }
     }
     
