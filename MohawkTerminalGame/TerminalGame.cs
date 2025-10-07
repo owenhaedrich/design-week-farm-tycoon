@@ -4,15 +4,13 @@ namespace MohawkTerminalGame;
 
 public class TerminalGame
 {
-    // Place your variables here
-
-
     /// Run once before Execute begins
     public void Setup()
     {
         Program.TerminalExecuteMode = TerminalExecuteMode.ExecuteTime;
         Program.TerminalInputMode = TerminalInputMode.EnableInputDisableReadLine;
         Program.TargetFPS = 60;
+        Terminal.CursorVisible = false;
         Terminal.SetTitle("Title");
 
         FieldView.ViewField();
@@ -42,5 +40,21 @@ public class TerminalGame
         {
             FieldView.MoveSelection(moveX, moveY);
         }
+        
+        if (Input.IsKeyPressed(ConsoleKey.Spacebar) || Input.IsKeyPressed(ConsoleKey.Enter))
+        {
+        }
+        else if (Input.IsKeyPressed(ConsoleKey.D1))
+        {
+            FieldView.PlaceTile(TileType.Wheat);
+        }
+        else if (Input.IsKeyPressed(ConsoleKey.D2))
+        {
+            FieldView.PlaceTile(TileType.Cow);
+        }
+
+        Terminal.BackgroundColor = ConsoleColor.Black;
+        Terminal.ForegroundColor = ConsoleColor.Black;
+        Terminal.SetCursorPosition(30, 11);
     }
 }
