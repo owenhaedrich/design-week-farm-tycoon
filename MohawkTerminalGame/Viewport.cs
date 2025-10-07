@@ -8,8 +8,15 @@ namespace MohawkTerminalGame
 {
     internal class Viewport
     {
-        public static int width = 30;
-        public static int height = 10;
-        public static int InfoBarHeight = 3;
+        public static int windowWidth = 48;
+        public static int windowHeight = 16;
+
+        public static void HideCursor()
+        {
+            // Hide cursor and move it out of the way
+            Terminal.BackgroundColor = ConsoleColor.Black;
+            Terminal.ForegroundColor = ConsoleColor.Black;
+            Terminal.SetCursorPosition(windowWidth, windowHeight);
+        }
     }
 }

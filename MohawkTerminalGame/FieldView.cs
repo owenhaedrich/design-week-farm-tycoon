@@ -11,19 +11,29 @@ namespace MohawkTerminalGame
         Cow,
         Chicken
     }
+
+    // Interaction Types
+    public enum InteractionType
+    {
+        Feed, // For animals
+        Harvest, // For both animals and crops
+    }
+
     public class FieldView
     {
         // Visual elements
         static ColoredText highlight = new("X", ConsoleColor.Red, ConsoleColor.Black);
         static ColoredText dirt = new("░", ConsoleColor.DarkYellow, ConsoleColor.DarkYellow);
+        static int visualScaleX = 8;
+        static int visualScaleY = 4;
 
         // Game elements
         static int selectionX = 0;
         static int selectionY = 0;
         static int previousSelectionX = 0;
         static int previousSelectionY = 0;
-        internal static TerminalGridWithColor field = new(Viewport.width, Viewport.height, dirt);
-        internal static LogicalGrid logicalGrid = new(Viewport.width/2, Viewport.height/2, 2, 2);
+        internal static TerminalGridWithColor field = new(Viewport.windowWidth, Viewport.windowHeight, dirt);
+        internal static LogicalGrid logicalGrid = new(Viewport.windowWidth / visualScaleX, Viewport.windowHeight / visualScaleY, visualScaleX, visualScaleY);
 
         // Initialization
         public static void ViewField()

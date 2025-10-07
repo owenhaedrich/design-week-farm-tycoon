@@ -57,9 +57,8 @@ public class TerminalGame
             FieldView.PlaceTile(TileType.Chicken);
         }
 
-        // Hide cursor and move it out of the way
-        Terminal.BackgroundColor = ConsoleColor.Black;
-        Terminal.ForegroundColor = ConsoleColor.Black;
-        Terminal.SetCursorPosition(30, 11);
+        FieldInfoBar.Draw();
+
+        Viewport.HideCursor();
     }
 }
