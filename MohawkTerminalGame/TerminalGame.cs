@@ -2,8 +2,12 @@
 
 namespace MohawkTerminalGame;
 
+public enum GameState { Story, Field, Shop, Paused }
+
 public class TerminalGame
 {
+    GameState gameState = GameState.Field;
+
     /// Run once before Execute begins
     public void Setup()
     {
@@ -23,6 +27,9 @@ public class TerminalGame
     //               Code must finish within the alloted time frame for this to work well.
     public void Execute()
     {
-        FieldView.Execute();
+        if (gameState == GameState.Field)
+        {
+            FieldView.Execute();
+        }
     }
 }
