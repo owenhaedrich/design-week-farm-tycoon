@@ -1,17 +1,19 @@
-﻿namespace MohawkTerminalGame;
+﻿using System;
+
+namespace MohawkTerminalGame;
 
 public class TerminalGame
 {
-    // Place your variables here
-
-
     /// Run once before Execute begins
     public void Setup()
     {
-        Program.TerminalExecuteMode = TerminalExecuteMode.ExecuteLoop;
+        Program.TerminalExecuteMode = TerminalExecuteMode.ExecuteTime;
         Program.TerminalInputMode = TerminalInputMode.EnableInputDisableReadLine;
-
+        Program.TargetFPS = 20;
+        Terminal.CursorVisible = false;
         Terminal.SetTitle("Title");
+
+        FieldView.ViewField();
     }
 
     // Execute() runs based on Program.TerminalExecuteMode (assign to it in Setup).
@@ -21,8 +23,6 @@ public class TerminalGame
     //               Code must finish within the alloted time frame for this to work well.
     public void Execute()
     {
-
+        FieldView.Execute();
     }
-
-
 }

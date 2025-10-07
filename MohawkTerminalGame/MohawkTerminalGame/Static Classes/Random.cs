@@ -21,7 +21,7 @@ public static class Random
     /// <summary>
     ///     The underlying random number generator for all methods.
     /// </summary>
-    private static readonly System.Random rng = new();
+    static readonly System.Random rng = new();
 
     #endregion
 
