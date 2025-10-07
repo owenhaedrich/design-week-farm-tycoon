@@ -21,6 +21,47 @@ namespace MohawkTerminalGame
 
     public class FieldView
     {
+        public static void Execute()
+        {
+            int moveX = 0;
+            int moveY = 0;
+
+            if (Input.IsKeyPressed(ConsoleKey.RightArrow))
+                moveX++;
+            if (Input.IsKeyPressed(ConsoleKey.LeftArrow))
+                moveX--;
+            if (Input.IsKeyPressed(ConsoleKey.DownArrow))
+                moveY++;
+            if (Input.IsKeyPressed(ConsoleKey.UpArrow))
+                moveY--;
+
+
+            if (moveX != 0 || moveY != 0)
+            {
+                MoveSelection(moveX, moveY);
+            }
+
+            if (Input.IsKeyPressed(ConsoleKey.Spacebar) || Input.IsKeyPressed(ConsoleKey.Enter))
+            {
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.D1))
+            {
+                PlaceTile(TileType.Wheat);
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.D2))
+            {
+                PlaceTile(TileType.Cow);
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.D3))
+            {
+                PlaceTile(TileType.Chicken);
+            }
+
+            FieldInfoBar.Draw();
+
+            Viewport.HideCursor();
+        }
+
         // Visual elements
         static ColoredText highlight = new("X", ConsoleColor.Red, ConsoleColor.Black);
         static ColoredText dirt = new("░", ConsoleColor.DarkYellow, ConsoleColor.DarkYellow);
