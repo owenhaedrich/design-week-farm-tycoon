@@ -8,8 +8,8 @@ public class TerminalGame
     /// Run once before Execute begins
     public void Setup()
     {
-        Program.TerminalExecuteMode = TerminalExecuteMode.ExecuteOnce;
-        Program.TerminalInputMode = TerminalInputMode.KeyboardReadAndReadLine;
+        Program.TerminalExecuteMode = TerminalExecuteMode.ExecuteLoop;
+        Program.TerminalInputMode = TerminalInputMode.EnableInputDisableReadLine;
 
         Terminal.SetTitle("Title");
     }
@@ -23,5 +23,6 @@ public class TerminalGame
     {
 
     }
+
 
 }
