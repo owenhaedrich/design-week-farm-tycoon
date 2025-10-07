@@ -3,10 +3,11 @@ using System.Collections.Generic;
 
 namespace MohawkTerminalGame
 {
-    public class FieldInfoBar
+    public class FieldInfo
     {
         // Game variables
         static int money = 10000;
+        static int[] inventory = [0,1,3]; // Placeholder for inventory. Zero cows, one chicken, three wheat
         static bool moneyChange = true;
         static bool inventoryChange = true;
         static bool timerChange = true;

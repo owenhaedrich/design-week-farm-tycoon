@@ -57,7 +57,7 @@ namespace MohawkTerminalGame
                 PlaceTile(TileType.Chicken);
             }
 
-            FieldInfoBar.Draw();
+            FieldInfo.Draw();
 
             Viewport.HideCursor();
         }
@@ -172,7 +172,7 @@ namespace MohawkTerminalGame
             {
                 RemoveHighlight();
                 ApplyHighlight();
-                FieldInfoBar.OnSelectionChanged();
+                FieldInfo.OnSelectionChanged();
             }
         }
 
