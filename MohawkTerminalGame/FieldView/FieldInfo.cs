@@ -25,6 +25,15 @@ namespace MohawkTerminalGame
 
         public static void Draw()
         {
+            moneyChange = true;
+            inventoryChange = true;
+            timerChange = true;
+            interactionChange = true;
+            Update();
+        }
+
+        public static void Update()
+        {
             // Money and inventory
             if (moneyChange)
             {

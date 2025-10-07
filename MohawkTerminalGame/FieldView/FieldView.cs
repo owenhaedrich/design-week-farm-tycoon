@@ -21,6 +21,15 @@ namespace MohawkTerminalGame
 
     public class FieldView
     {
+        // Initialization
+        public static void ViewField()
+        {
+            SyncVisualWithLogical();
+            ApplyHighlight();
+            FieldInfo.Draw();
+        }
+
+        // Main execution loop
         public static void Execute()
         {
             int moveX = 0;
@@ -57,8 +66,9 @@ namespace MohawkTerminalGame
                 PlaceTile(TileType.Chicken);
             }
 
-            FieldInfo.Draw();
+            FieldInfo.Update();
 
+            // Keep cursor hidden consistently
             Viewport.HideCursor();
         }
 
@@ -75,14 +85,6 @@ namespace MohawkTerminalGame
         static int previousSelectionY = 0;
         internal static TerminalGridWithColor field = new(Viewport.windowWidth, Viewport.windowHeight, dirt);
         internal static LogicalGrid logicalGrid = new(Viewport.windowWidth / visualScaleX, Viewport.windowHeight / visualScaleY, visualScaleX, visualScaleY);
-
-        // Initialization
-        public static void ViewField()
-        {
-            SyncVisualWithLogical();
-            ApplyHighlight();
-            field.ClearWrite();
-        }
 
         // Map tile types to visual representations
         static ColoredText GetVisualForTileType(TileType tileType)
@@ -138,7 +140,7 @@ namespace MohawkTerminalGame
         }
 
         // Remove highlight from the previous selection by restoring the underlying tile
-        static void RemoveHighlight()
+        public static void RemoveHighlight()
         {
             var (visualX, visualY) = logicalGrid.LogicalToVisual(previousSelectionX, previousSelectionY);
             var previousSpace = logicalGrid.GetSpace(previousSelectionX, previousSelectionY);
