@@ -7,6 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace MohawkTerminalGame
 {
+    // lvl - turns untill grown
     #region Animals
     public class Animal
     {
@@ -137,6 +138,7 @@ namespace MohawkTerminalGame
     }
     #endregion
 
+    // lvl - turns untill grown
     #region Crops
     public class Crop
     {
@@ -269,6 +271,7 @@ namespace MohawkTerminalGame
     }
     #endregion
 
+    // lvl - turns untill broken
     #region Extras
     public class Extra
     {
