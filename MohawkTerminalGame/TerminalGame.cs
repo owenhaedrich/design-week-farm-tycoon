@@ -10,6 +10,8 @@ public class TerminalGame
     GameState gameStateBeforePause = GameState.Field;
     bool justPaused = false;
 
+    Shop shop = new Shop();
+
     /// Run once before Execute begins
     public void Setup()
     {
@@ -42,12 +44,13 @@ public class TerminalGame
                 justPaused = false;
             }
             else if (Input.IsKeyPressed(ConsoleKey.P))
-            {              
+            {
                 gameState = gameStateBeforePause;
                 if (gameState == GameState.Field)
                 {
                     FieldView.Unpause();
                 }
+                return;
             }
         }
         else if (Input.IsKeyPressed(ConsoleKey.P))
@@ -55,12 +58,59 @@ public class TerminalGame
             gameStateBeforePause = gameState;
             gameState = GameState.Paused;
             justPaused = true;
+            return;
         }
 
         // Playing states
-        if (gameState == GameState.Field)
+        switch (gameState)
         {
-            FieldView.Execute();
+            case GameState.Field:
+                FieldView.Execute();
+
+                // Checks if timer in FieldInfo reaches 0, then goes to Shop
+                if (FieldInfo.TimerExpired)
+                {
+                    FieldInfo.TimerExpired = false;
+                    gameState = GameState.Shop;
+                    Console.Clear();
+                }
+
+                // Manually open the shop using s (Uncomment code, useful for debugging)
+             //   if (Input.IsKeyPressed(ConsoleKey.S))
+             //   {
+             //       gameState = GameState.Shop;
+             //       Console.Clear();
+             //   }
+
+                break;
+
+            case GameState.Shop:
+                RunShop();
+                break;
         }
+    }
+
+    private void RunShop()
+    {
+        shop.Show();
+        string input = Console.ReadLine()?.Trim().ToLower();
+
+        if (string.IsNullOrWhiteSpace(input))
+            return;
+
+        if (input == "exit")
+        {
+            gameState = GameState.Field;
+            Console.Clear();
+            FieldView.Start(); // resume field mode
+            return;
+        }
+
+        shop.HandleInput(input);
+
+        Console.WriteLine();
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadKey(true);
+        Console.Clear();
     }
 }
