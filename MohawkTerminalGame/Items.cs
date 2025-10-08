@@ -269,13 +269,11 @@ namespace MohawkTerminalGame
     }
     #endregion
 
-
-
-
+    #region Extras
     public class Extra
     {
-        public int baseBuyPrice;
-        public int trueBuyPrice;
+        public int startPrice;
+        public int realPrice;
         public float dupeTax = 1.11f;
         public int sellPrice;
         public int usedSellPrice;
@@ -283,48 +281,60 @@ namespace MohawkTerminalGame
         public int currentDurability;
         public float reduceDurability;
         public double ability;
+        public string name = "";
 
         // Temp
         public int currentTurn;
         public int purchaseTurn;
         public int amountOwned;
         public int amountPlaced;
+
+        public virtual void AdvanceTurn()
+        {
+            currentTurn++;
+        }
     }
 
-    public class Extras
+    // lvl 5
+    public class Scarecrow : Extra
     {
-        public Extra Egg() // misc
+        public Scarecrow()
         {
-            Extra egg = new Extra();
+            name = "Scarecrow";
 
-            egg.sellPrice = 20;
-            
-            // random (small) chance when used, to give player a new chicken at the cost of the egg
+            startPrice = 100;
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
 
-            return egg;
+            maxDurability = 5;
+            currentDurability = maxDurability;
+
+            sellPrice = 20;
         }
-
-        public Extra Scarecrow() // defense lvl 5
+        public override void AdvanceTurn()
         {
-            Extra scarecrow = new Extra();
+            base.AdvanceTurn();
 
-            scarecrow.baseBuyPrice = 100;
-            scarecrow.trueBuyPrice = (int)Math.Round(scarecrow.baseBuyPrice * Math.Pow(scarecrow.dupeTax, scarecrow.amountOwned));
-            scarecrow.sellPrice = 20;
-            scarecrow.maxDurability = 5;
-            scarecrow.currentDurability = 5;
-
-            if (scarecrow.currentDurability > 0)
+            if (currentDurability > 0)
             {
-                scarecrow.currentDurability--;
+                currentDurability--;
             }
             else
             {
-                scarecrow.amountPlaced--;
+                amountPlaced--;
             }
-            return scarecrow;
+
+            if (currentDurability < maxDurability)
+            {
+                sellPrice = sellPrice - ((sellPrice/5) * (maxDurability - currentDurability));
+            }
+            else
+            {
+
+            }
         }
+
     }
+    #endregion
 
     /// To-Do
     /// 
@@ -335,8 +345,8 @@ namespace MohawkTerminalGame
     /// 
     /// buff animals that are given crops
     /// each crop gives different buff for different time
+    /// 
     /// add more items
     /// 
     /// ?? add higher tax but decreases each turn you dont buy the item ??
-    /// ?? item durability reduces sell value at 1:1 (%) ??
 }
