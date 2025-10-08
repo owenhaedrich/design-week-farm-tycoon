@@ -82,7 +82,7 @@ namespace MohawkTerminalGame
                 FeedTile();
             }
 
-                FieldInfo.Update();
+            FieldInfo.Update();
 
             // Keep cursor hidden consistently
             Viewport.HideCursor();
@@ -143,7 +143,7 @@ namespace MohawkTerminalGame
                             int currentY = visualY + yOffset;
 
                             field.Poke(currentX, currentY, expectedVisual);
-                            
+
                         }
                     }
                 }
@@ -205,6 +205,24 @@ namespace MohawkTerminalGame
 
         public static void PlaceTile(TileType tileType)
         {
+            // Check if the current space is dirt (only allow placement on dirt)
+            if (logicalGrid.GetSpace(selectionX, selectionY).TileType != TileType.Dirt)
+            {
+                return;
+            }
+
+            // Check if we have the required inventory item
+            if (!FieldInfo.CanPlaceTile(tileType))
+            {
+                return;
+            }
+
+            // Deduct the inventory item
+            if (!FieldInfo.TryPlaceTile(tileType))
+            {
+                return;
+            }
+
             // Update logical grid at current selection
             logicalGrid.SetTileType(selectionX, selectionY, tileType);
 
@@ -221,6 +239,9 @@ namespace MohawkTerminalGame
 
             // Reapply highlight (the tile placement overwrote it)
             ApplyHighlight();
+
+            // Update interactions
+            FieldInfo.OnSelectionChanged();
         }
 
         public static void HarvestTile()
@@ -264,7 +285,7 @@ namespace MohawkTerminalGame
             return interactions;
         }
     }
-    
+
     // Represents a single space on the logical grid
     public class GridSpace
     {

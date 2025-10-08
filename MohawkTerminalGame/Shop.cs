@@ -35,13 +35,9 @@ namespace MohawkTerminalGame
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("╠══════════════════════════════════════╬═══════════════════════════════════════╣");
 
-            // Builds from FieldInfo.inventory array
-            Dictionary<string, int> inventoryCounts = new()
-            {
-                { "Cow", FieldInfoInventorySafe(0) },
-                { "Chicken", FieldInfoInventorySafe(0) },
-                { "Wheat", FieldInfoInventorySafe(0) }
-            };
+            // Builds from Inventory.Items
+            Dictionary<string, string> nameToIcon = items.ToDictionary(i => i.Name.ToLower(), i => i.Icon);
+            Dictionary<string, int> inventoryCounts = nameToIcon.ToDictionary(kvp => kvp.Key, kvp => Inventory.GetItemCount(kvp.Value));
 
             int maxRows = Math.Max(items.Count, inventoryCounts.Count);
 
@@ -91,7 +87,7 @@ namespace MohawkTerminalGame
 
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Green;
-            string moneyText = $"Your Money: ${FieldInfoGetMoney()}";
+            string moneyText = $"Your Money: ${Inventory.Money}";
             Console.WriteLine(CenterText(moneyText, leftWidth + rightWidth + 3));
 
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -120,16 +116,10 @@ namespace MohawkTerminalGame
                 return;
             }
 
-            int money = FieldInfoGetMoney();
-
-            if (money >= item.Price)
+            if (Inventory.SpendMoney(item.Price))
             {
-                // Deduct money from player
-                money -= item.Price;
-                FieldInfoSetMoney(money);
-
-                // Updates FieldInfo inventory
-                AddItemToFieldInventory(item.Name);
+                // Updates inventory
+                Inventory.AddItem(item.Icon, 1);
 
                 // Decreases shop stock
                 item.Stock--;
@@ -146,58 +136,11 @@ namespace MohawkTerminalGame
             }
         }
 
-        // FieldInfo helpers
-
         private string CenterText(string text, int width)
         {
             if (text.Length >= width) return text.Substring(0, width);
             int pad = (width - text.Length) / 2;
             return new string(' ', pad) + text + new string(' ', width - text.Length - pad);
-        }
-
-        private static int FieldInfoGetMoney()
-        {
-            var moneyField = typeof(FieldInfo).GetField("money", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-            return (int)moneyField.GetValue(null);
-        }
-
-        private static void FieldInfoSetMoney(int newMoney)
-        {
-            var moneyField = typeof(FieldInfo).GetField("money", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-            moneyField.SetValue(null, newMoney);
-        }
-
-        private static int[] FieldInfoGetInventoryArray()
-        {
-            var invField = typeof(FieldInfo).GetField("inventory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-            return (int[])invField.GetValue(null);
-        }
-
-        private static int FieldInfoInventorySafe(int index)
-        {
-            var inv = FieldInfoGetInventoryArray();
-            if (index < 0 || index >= inv.Length) return 0;
-            return inv[index];
-        }
-
-        private static void AddItemToFieldInventory(string itemName)
-        {
-            var inv = FieldInfoGetInventoryArray();
-            switch (itemName.ToLower())
-            {
-                case "chicken":
-                    inv[0] += 1;
-                    break;
-                case "cow":
-                    inv[1] += 1;
-                    break;
-                case "wheat":
-                    inv[2] += 1;
-                    break;
-            }
-
-            var invField = typeof(FieldInfo).GetField("inventory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-            invField.SetValue(null, inv);
         }
     }
 

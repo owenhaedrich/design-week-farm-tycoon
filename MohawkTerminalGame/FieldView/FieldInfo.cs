@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MohawkTerminalGame
 {
+
     public class FieldInfo
     {
         // Game variables
-        static int money = 100;
-        static int[] inventory = [0,1,3]; // Placeholder for inventory. Zero cows, one chicken, three wheat
-        static bool moneyChange = true;
-        static bool inventoryChange = true;
         static bool timerChange = true;
         static bool interactionChange = true;
 
@@ -23,27 +21,34 @@ namespace MohawkTerminalGame
         static int maxTimerTick = Program.TargetFPS; //frames per tick
         static int timerTick = maxTimerTick;
 
+        // Tile costs in inventory items
+        static Dictionary<TileType, string> tileCosts = new Dictionary<TileType, string>
+        {
+            { TileType.Wheat, "🌾" },
+            { TileType.Cow, "🐄" },
+            { TileType.Chicken, "🐔" }
+        };
+
         public static void Draw()
         {
-            moneyChange = true;
-            inventoryChange = true;
-            timerChange = true;
-            interactionChange = true;
+            Inventory.MoneyChanged = true;
+            Inventory.ItemsChanged = true;
             Update();
         }
 
         public static void Update()
         {
             // Money and inventory
-            if (moneyChange)
+            if (Inventory.MoneyChanged)
             {
                 DrawMoney();
-                moneyChange = false;
+                Inventory.MoneyChanged = false;
             }
 
             if (InventoryNeedsRedraw())
             {
-
+                DrawInventory();
+                Inventory.ItemsChanged = false;
             }
 
             // Interaction Bar
@@ -73,6 +78,11 @@ namespace MohawkTerminalGame
                 }
                 timerChange = true;
             }
+            // Press S to speed up timer
+            if (Input.IsKeyPressed(ConsoleKey.S))
+            {
+                timer -= 10;
+            }
         }
 
         static void DrawMoney()
@@ -87,7 +97,7 @@ namespace MohawkTerminalGame
 
             string moneyLeftBorder = new string(' ', moneyLeftPadding);
             string moneyRightBorder = new string(' ', moneyRightPadding);
-            string moneyString = $"Money: ${money}";
+            string moneyString = $"Money: ${Inventory.Money}";
 
             Terminal.Write(moneyLeftBorder + moneyString + moneyRightBorder);
 
@@ -102,6 +112,24 @@ namespace MohawkTerminalGame
                 Terminal.SetCursorPosition(Viewport.windowWidth, row);
                 string moneyBackground = new string(' ', moneyLeftPadding + moneyString.Length + moneyRightPadding);
                 Terminal.Write(moneyBackground);
+            }
+        }
+
+        static void DrawInventory()
+        {
+            int inventoryY = 4; // Below money display
+            int inventoryX = Viewport.windowWidth;
+            Terminal.SetCursorPosition(inventoryX, inventoryY);
+            Terminal.BackgroundColor = ConsoleColor.DarkGray;
+            Terminal.ForegroundColor = ConsoleColor.White;
+            // Inventory Title Line
+            Terminal.Write("Inventory: ");
+            int itemIndex = 0;
+            foreach (var kvp in Inventory.Items.OrderBy(k => k.Key))
+            {
+                Terminal.SetCursorPosition(inventoryX, inventoryY + itemIndex + 1);
+                Terminal.Write($"{kvp.Key} x{kvp.Value} ");
+                itemIndex++;
             }
         }
 
@@ -190,21 +218,45 @@ namespace MohawkTerminalGame
             }
         }
 
+        // Inventory management methods
+        public static bool CanPlaceTile(TileType tileType)
+        {
+            if (tileCosts.ContainsKey(tileType))
+            {
+                string requiredItem = tileCosts[tileType];
+                return Inventory.GetItemCount(requiredItem) > 0;
+            }
+            return true; // If tile doesn't have a cost, allow placement
+        }
+
+        public static bool TryPlaceTile(TileType tileType)
+        {
+            if (!CanPlaceTile(tileType))
+                return false;
+
+            if (tileCosts.ContainsKey(tileType))
+            {
+                string requiredItem = tileCosts[tileType];
+                if (!Inventory.RemoveItem(requiredItem, 1))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public static int GetItemCount(string itemName) => Inventory.GetItemCount(itemName);
+
+        public static bool RemoveItem(string itemName, int amount) => Inventory.RemoveItem(itemName, amount);
+
+        public static void AddItem(string itemName, int amount) => Inventory.AddItem(itemName, amount);
+
         // Call this method when selection changes to update interactions
         public static void OnSelectionChanged()
         {
             interactionChange = true;
         }
 
-        public static bool InventoryNeedsRedraw()
-        {
-            if (inventoryChange)
-            {
-                inventoryChange = false;
-                return true;
-            }
-            return false;
-        }
+        public static bool InventoryNeedsRedraw() => Inventory.ItemsChanged;
         public static bool TimerExpired = false;
     }
 }
