@@ -135,102 +135,140 @@ namespace MohawkTerminalGame
     }
     #endregion
 
+    #region Crops
     public class Crop
     {
-        public int baseBuyPrice;
-        public int trueBuyPrice;
-        public int sellPrice;
+        public int startPrice;
+        public int realPrice;
+        public int sellValue;
         public float dupeTax = 1.08f;
-        public int growthTime;
+        public int growTime;
+        public string name = "";
 
         // temp variables
         public int amountOwned;
         public int currentTurn;
         public int purchaseTurn;
+        public int money;
+
+        public virtual void AdvanceTurn()
+        {
+            currentTurn++;
+        }
     }
 
-    public class Crops
+    // lvl 1
+    public class Wheat : Crop
     {
-        public Crop Wheat() // crop lvl 1
+        public Wheat()
         {
-            Crop wheat = new Crop();
+            name = "Wheat";
 
-            wheat.baseBuyPrice = 20;
-            wheat.trueBuyPrice = (int)Math.Round(wheat.baseBuyPrice * Math.Pow(wheat.dupeTax, wheat.amountOwned));
+            startPrice = 25;
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
 
-            // add 1 to growthTime each turn until current is 1 more than purchase
-            wheat.purchaseTurn = wheat.currentTurn;
-            if (wheat.currentTurn < wheat.purchaseTurn + 1)
-            {
-                wheat.growthTime++;
-            }
-
-            wheat.growthTime = 1;
-            if (wheat.growthTime >= 1)
-            {
-                wheat.sellPrice = 40;
-            }
-            else
-            {
-                wheat.sellPrice = 5;
-            }
-
-            return wheat;
+            purchaseTurn = currentTurn;
         }
-
-        public Crop Carrot() // crop lvl 2
+        public override void AdvanceTurn()
         {
-            Crop carrot = new Crop();
+            base.AdvanceTurn();
 
-            carrot.baseBuyPrice = 55;
-            carrot.trueBuyPrice = (int)Math.Round(carrot.baseBuyPrice * Math.Pow(carrot.dupeTax, carrot.amountOwned));
-
-            // add 1 to growthTime each turn until current is 2 more than purchase
-            carrot.purchaseTurn = carrot.currentTurn;
-            if (carrot.currentTurn < carrot.purchaseTurn + 2)
+            if (currentTurn < purchaseTurn + 1)
             {
-                carrot.growthTime++;
-            }
-
-            if (carrot.growthTime >= 2)
-            {
-                carrot.sellPrice = 80;
+                growTime++;
             }
             else
             {
-                carrot.sellPrice = 30;
+
             }
 
-            return carrot;
-        }
-
-        public Crop Corn() // crop lvl 4
-        {
-            Crop corn = new Crop();
-
-            corn.baseBuyPrice = 110;
-            corn.trueBuyPrice = (int)Math.Round(corn.baseBuyPrice * Math.Pow(corn.dupeTax, corn.amountOwned));
-
-            // add 1 to growthTime each turn until current is 4 more than purchase
-            corn.purchaseTurn = corn.currentTurn;
-            if (corn.currentTurn < corn.purchaseTurn + 4)
+            if (growTime >= 1)
             {
-                corn.growthTime++;
-            }
-            corn.growthTime = 4;
-
-            if (corn.growthTime >= 4)
-            {
-                corn.sellPrice = 140;
+                sellValue = 45;
             }
             else
             {
-                corn.sellPrice = 70;
+                sellValue = 5;
             }
-
-            return corn;
         }
     }
+
+    // lvl 2
+    public class Carrot : Crop
+    {
+        public Carrot()
+        {
+            name = "Carrot";
+
+            startPrice = 55;
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+
+            purchaseTurn = currentTurn;
+        }
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+
+            if (currentTurn < purchaseTurn + 2)
+            {
+                growTime++;
+            }
+            else
+            {
+
+            }
+
+            if (growTime >= 2)
+            {
+                sellValue = 80;
+            }
+            else
+            {
+                sellValue = 30;
+            }
+        }
+    }
+
+    // lvl 4
+    public class Corn : Crop
+    {
+        public Corn()
+        {
+            name = "Corn";
+
+            startPrice = 110;
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+
+            purchaseTurn = currentTurn;
+        }
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+
+            if (currentTurn < purchaseTurn + 4)
+            {
+                growTime++;
+            }
+            else
+            {
+
+            }
+
+            if (growTime >= 4)
+            {
+                sellValue = 140;
+            }
+            else
+            {
+                sellValue = 70;
+            }
+        }
+
+    }
+    #endregion
+
+
+
 
     public class Extra
     {
@@ -292,7 +330,6 @@ namespace MohawkTerminalGame
     /// pig ability - check for carrot, if nearby AND fully grown, make sell 1.5x
     /// cow ability - check for other cows, if 2 or more nearby AND 2+ fully grown, give 1 milk per grown cow
     /// 
-    /// rename variables for easier use
     /// buff animals that are given crops
     /// each crop gives different buff for different time
     /// add more items
