@@ -7,12 +7,15 @@ namespace MohawkTerminalGame
     public class Shop
     {
         // Shop items with price, icon, and stock
-        private List<Item> items = new List<Item>()
+        private List<ShopItem> items = new List<ShopItem>()
         {
-            new Item("Chicken", 20, "🐔", 10),
-            new Item("Cow", 50, "🐄", 5),
-            new Item("Wheat", 5, "🌾", 20),
+            new ShopItem(Item.WheatSeed, 20),
+            new ShopItem(Item.CarrotSeed, 20),
+            new ShopItem(Item.Calf, 5),
+            new ShopItem(Item.Chicken, 10),
         };
+
+        private bool isSellMode = false;
 
         public Shop() { }
 
@@ -24,66 +27,138 @@ namespace MohawkTerminalGame
             const int leftWidth = 38;
             const int rightWidth = 39;
 
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("╔══════════════════════════════════════╦═══════════════════════════════════════╗");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("║         🛒 Welcome to the Shop!      ║               Inventory               ║");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("╠══════════════════════════════════════╬═══════════════════════════════════════╣");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("║ Item       Price  Stock              ║ Items Owned                           ║");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("╠══════════════════════════════════════╬═══════════════════════════════════════╣");
+            if (!isSellMode)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("╔══════════════════════════════════════╦═══════════════════════════════════════╗");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                string rightHeader = "           Inventory            ";
+                Console.WriteLine($"║         🛒 Welcome to the Shop!       {rightHeader}║");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("╠══════════════════════════════════════╬═══════════════════════════════════════╣");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("╔═══════════════════════════════════════════════════════════════════════════════╗");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"║                          🛒 Welcome to Sell Items!                           ║");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("╠═══════════════════════════════════════════════════════════════════════════════╣");
+            }
+            if (!isSellMode)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                string rightHeader2 = " Items Owned ";
+                Console.WriteLine($"║ Item       Price  Stock              ║{rightHeader2}                         ║");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("╠══════════════════════════════════════╬═══════════════════════════════════════╣");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"║ Item       Sell Price  Qty                                           ║");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("╠═══════════════════════════════════════════════════════════════════════════════╣");
+            }
 
             // Builds from Inventory.Items
             Dictionary<string, string> nameToIcon = items.ToDictionary(i => i.Name.ToLower(), i => i.Icon);
             Dictionary<string, int> inventoryCounts = nameToIcon.ToDictionary(kvp => kvp.Key, kvp => Inventory.GetItemCount(kvp.Value));
 
-            int maxRows = Math.Max(items.Count, inventoryCounts.Count);
+            var sellableItems = Item.ItemsByIcon.Values.Where(i => i.SellPrice > 0).OrderBy(i => i.Name).ToList();
+
+            int maxRows;
+
+            if (isSellMode)
+
+            {
+
+                maxRows = sellableItems.Count;
+
+            }
+
+            else
+
+            {
+
+                maxRows = Math.Max(items.Count, inventoryCounts.Count);
+
+            }
 
             for (int i = 0; i < maxRows; i++)
             {
-                string leftText = "";
-                string rightText = "";
-
-                // Shop items
-                if (i < items.Count)
+                if (isSellMode)
                 {
-                    var item = items[i];
-                    Console.ForegroundColor = item.Stock > 0 ? ConsoleColor.White : ConsoleColor.DarkGray;
-
-                    leftText = $"{item.Name,-10} ";
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    leftText += $"{item.Price,5:C0} ";
-                    Console.ForegroundColor = item.Stock > 0 ? ConsoleColor.Green : ConsoleColor.Red;
-                    leftText += $"{(item.Stock > 0 ? item.Stock.ToString() : "Sold Out"),8} ";
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    leftText += item.Icon;
+                    string sellText = "";
+                    if (i < sellableItems.Count)
+                    {
+                        var item = sellableItems[i];
+                        Console.ForegroundColor = ConsoleColor.White;
+                        sellText += $"{i+1}. ";
+                        sellText += $"{item.Name,-10} ";
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        sellText += $"{item.SellPrice,5} ";
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        sellText += $"{Inventory.GetItemCount(item.Icon),3} ";
+                        Console.ForegroundColor = ConsoleColor.Magenta;
+                        sellText += $" {item.Icon}";
+                    }
+                    sellText = sellText.PadRight(77);
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine($"║{sellText}║");
                 }
-                leftText = leftText.PadRight(leftWidth);
-
-                // Player’s inventory
-                if (i < inventoryCounts.Count)
+                else
                 {
-                    var key = inventoryCounts.Keys.ElementAt(i);
-                    var count = inventoryCounts[key];
-                    var icon = items.FirstOrDefault(it => it.Name == key)?.Icon ?? "";
+                    string leftText = "";
+                    string rightText = "";
+
+                    // Shop items
+                    if (i < items.Count)
+                    {
+                        var item = items[i];
+                        Console.ForegroundColor = item.Stock > 0 ? ConsoleColor.White : ConsoleColor.DarkGray;
+                        leftText += $"{i+1}. ";
+                        leftText += $"{item.Name,-10} ";
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        leftText += $"{item.Price,5:C0} ";
+                        Console.ForegroundColor = item.Stock > 0 ? ConsoleColor.Green : ConsoleColor.Red;
+                        leftText += $"{(item.Stock > 0 ? item.Stock.ToString() : "Sold Out"),8} ";
+                        Console.ForegroundColor = ConsoleColor.Magenta;
+                        leftText += item.Icon;
+                    }
+                    leftText = leftText.PadRight(leftWidth);
+
+                    // Player’s inventory
+                    if (i < inventoryCounts.Count)
+                    {
+                        var key = inventoryCounts.Keys.ElementAt(i);
+                        var count = inventoryCounts[key];
+                        var icon = items.FirstOrDefault(it => it.Name == key)?.Icon ?? "";
+                        Console.ForegroundColor = ConsoleColor.White;
+                        rightText += $"{key} ";
+                        Console.ForegroundColor = ConsoleColor.Magenta;
+                        rightText += icon + " ";
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        rightText += $": {count}";
+                    }
+                    rightText = rightText.PadRight(rightWidth);
 
                     Console.ForegroundColor = ConsoleColor.White;
-                    rightText = $"{key} ";
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    rightText += icon + " ";
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    rightText += $": {count}";
+                    Console.WriteLine($"║{leftText}║{rightText}║");
                 }
-                rightText = rightText.PadRight(rightWidth);
-
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"║{leftText}║{rightText}║");
             }
 
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("╚══════════════════════════════════════╩═══════════════════════════════════════╝");
+            if (!isSellMode)
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("╚══════════════════════════════════════╩═══════════════════════════════════════╝");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("╚═══════════════════════════════════════════════════════════════════════════════╝");
+            }
 
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Green;
@@ -91,15 +166,87 @@ namespace MohawkTerminalGame
             Console.WriteLine(CenterText(moneyText, leftWidth + rightWidth + 3));
 
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(CenterText("Type item name to buy or 'exit' to return to field", leftWidth + rightWidth + 3));
+            string instruction = isSellMode ? "Press number to sell 1 of item, 'B' to switch to buy, 'E' to leave" : "Press number to buy item, 'S' to switch to sell, 'E' to leave";
+            Console.WriteLine(CenterText(instruction, leftWidth + rightWidth + 3));
 
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("> ");
         }
 
         public void HandleInput(string input)
         {
-            var item = items.FirstOrDefault(i => i.Name.Equals(input, StringComparison.OrdinalIgnoreCase));
+            input = input.ToLower();
+
+            if (input == "s" && !isSellMode)
+            {
+                isSellMode = true;
+                return;
+            }
+            if (input == "b" && isSellMode)
+            {
+                isSellMode = false;
+                return;
+            }
+
+            if (int.TryParse(input, out int num))
+            {
+                if (isSellMode)
+                {
+                    var sellableItems = Item.ItemsByIcon.Values.Where(i => i.SellPrice > 0).OrderBy(i => i.Name).ToList();
+                    if (num >= 1 && num <= sellableItems.Count)
+                    {
+                        var item = sellableItems[num - 1];
+                        SellItem(item.Name, 1);
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("No item at that number.");
+                        Console.ResetColor();
+                    }
+                }
+                else if (num >= 1 && num <= items.Count)
+                {
+                    var item = items[num - 1];
+                    if (item.Stock <= 0)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Sorry, sold out.");
+                        Console.ResetColor();
+                        return;
+                    }
+                    if (Inventory.SpendMoney(item.Price))
+                    {
+                        Inventory.AddItem(item.Icon, 1);
+                        item.Stock--;
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"Bought a {item.Name}!");
+                        Console.ResetColor();
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Not enough money.");
+                        Console.ResetColor();
+                    }
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Invalid input.");
+                    Console.ResetColor();
+                }
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Invalid input.");
+                Console.ResetColor();
+            }
+        }
+
+        private void SellItem(string itemName, int amount)
+        {
+            var item = Item.ItemsByIcon.Values.FirstOrDefault(i => i.Name.Equals(itemName, StringComparison.OrdinalIgnoreCase));
             if (item == null)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -108,30 +255,18 @@ namespace MohawkTerminalGame
                 return;
             }
 
-            if (item.Stock <= 0)
+            if (Inventory.RemoveItem(item.Icon, amount))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Sorry, sold out.");
-                Console.ResetColor();
-                return;
-            }
-
-            if (Inventory.SpendMoney(item.Price))
-            {
-                // Updates inventory
-                Inventory.AddItem(item.Icon, 1);
-
-                // Decreases shop stock
-                item.Stock--;
-
+                int earn = item.SellPrice * amount;
+                Inventory.AddMoney(earn);
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"Bought a {item.Name}!");
+                Console.WriteLine($"Sold {amount} {item.Name} for ${earn}!");
                 Console.ResetColor();
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Not enough money.");
+                Console.WriteLine("Not enough items to sell.");
                 Console.ResetColor();
             }
         }
@@ -145,19 +280,20 @@ namespace MohawkTerminalGame
     }
 
     // Shop items with name, price, icon, and stock
-    public class Item
+    public class ShopItem
     {
         public string Name { get; }
-        public int Price { get; }
+        public int Price => (int)Math.Ceiling(Stats.BuyPrice); // Dynamic price from base Item, recalculated each time
         public string Icon { get; }
         public int Stock { get; set; }
+        public Item Stats { get; } // Reference to the base Item stats
 
-        public Item(string name, int price, string icon, int stock)
+        public ShopItem(Item stats, int stock)
         {
-            Name = name;
-            Price = price;
-            Icon = icon;
+            Name = stats.Name;
+            Icon = stats.Icon;
             Stock = stock;
+            this.Stats = stats;
         }
     }
 }

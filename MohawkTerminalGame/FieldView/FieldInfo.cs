@@ -21,13 +21,21 @@ namespace MohawkTerminalGame
         static int maxTimerTick = Program.TargetFPS; //frames per tick
         static int timerTick = maxTimerTick;
 
-        // Tile costs in inventory items
-        static Dictionary<TileType, string> tileCosts = new Dictionary<TileType, string>
+        // Get icon for tile type
+        public static string GetIconForTileType(TileType tileType)
         {
-            { TileType.Wheat, "🌾" },
-            { TileType.Cow, "🐄" },
-            { TileType.Chicken, "🐔" }
-        };
+            switch (tileType)
+            {
+                case TileType.WheatSeed: return Item.WheatSeed.Icon;
+                case TileType.CarrotSeed: return Item.CarrotSeed.Icon;
+                case TileType.Wheat: return Item.Wheat.Icon;
+                case TileType.Carrot: return Item.Carrot.Icon;
+                case TileType.Calf: return Item.Calf.Icon;
+                case TileType.Cow: return Item.Cow.Icon;
+                case TileType.Chicken: return Item.Chicken.Icon;
+                default: return null;
+            }
+        }
 
         public static void Draw()
         {
@@ -75,6 +83,7 @@ namespace MohawkTerminalGame
                 {
                     timer = maxTimer;
                     TimerExpired = true;
+                    FieldView.UpdateGrowth(); // Grow crops on day change
                 }
                 timerChange = true;
             }
@@ -125,7 +134,14 @@ namespace MohawkTerminalGame
             // Inventory Title Line
             Terminal.Write("Inventory: ");
             int itemIndex = 0;
-            foreach (var kvp in Inventory.Items.OrderBy(k => k.Key))
+            int GetItemType(string icon)
+            {
+                // Plants first
+                if (icon == Item.WheatSeed.Icon || icon == Item.CarrotSeed.Icon || icon == Item.Wheat.Icon || icon == Item.Carrot.Icon) return 0; // Plant
+                if (icon == Item.Calf.Icon || icon == Item.Cow.Icon || icon == Item.Chicken.Icon) return 1; // Animal
+                return 2; // Other
+            }
+            foreach (var kvp in Inventory.Items.OrderBy(kvp => GetItemType(kvp.Key)).ThenBy(kvp => kvp.Key))
             {
                 Terminal.SetCursorPosition(inventoryX, inventoryY + itemIndex + 1);
                 Terminal.Write($"{kvp.Key} x{kvp.Value} ");
@@ -221,27 +237,16 @@ namespace MohawkTerminalGame
         // Inventory management methods
         public static bool CanPlaceTile(TileType tileType)
         {
-            if (tileCosts.ContainsKey(tileType))
-            {
-                string requiredItem = tileCosts[tileType];
-                return Inventory.GetItemCount(requiredItem) > 0;
-            }
-            return true; // If tile doesn't have a cost, allow placement
+            string icon = GetIconForTileType(tileType);
+            return icon != null && Inventory.GetItemCount(icon) > 0;
         }
 
         public static bool TryPlaceTile(TileType tileType)
         {
-            if (!CanPlaceTile(tileType))
-                return false;
-
-            if (tileCosts.ContainsKey(tileType))
-            {
-                string requiredItem = tileCosts[tileType];
-                if (!Inventory.RemoveItem(requiredItem, 1))
-                    return false;
-            }
-
-            return true;
+            string icon = GetIconForTileType(tileType);
+            if (icon == null) return true; // Dirt
+            if (!CanPlaceTile(tileType)) return false;
+            return Inventory.RemoveItem(icon, 1);
         }
 
         public static int GetItemCount(string itemName) => Inventory.GetItemCount(itemName);

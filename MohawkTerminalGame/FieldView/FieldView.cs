@@ -7,7 +7,11 @@ namespace MohawkTerminalGame
     public enum TileType
     {
         Dirt,
+        WheatSeed,
+        CarrotSeed,
         Wheat,
+        Carrot,
+        Calf,
         Cow,
         Chicken
     }
@@ -63,15 +67,19 @@ namespace MohawkTerminalGame
             }
             else if (Input.IsKeyPressed(ConsoleKey.D1))
             {
-                PlaceTile(TileType.Wheat);
+                PlaceTile(TileType.WheatSeed); // Placeable: Wheat Seed
             }
             else if (Input.IsKeyPressed(ConsoleKey.D2))
             {
-                PlaceTile(TileType.Cow);
+                PlaceTile(TileType.CarrotSeed); // Placeable: Carrot Seed
             }
             else if (Input.IsKeyPressed(ConsoleKey.D3))
             {
-                PlaceTile(TileType.Chicken);
+                PlaceTile(TileType.Calf); // Placeable: Calf
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.D4))
+            {
+                PlaceTile(TileType.Chicken); // Placeable: Chicken
             }
             else if (Input.IsKeyPressed(ConsoleKey.H))
             {
@@ -109,12 +117,20 @@ namespace MohawkTerminalGame
             {
                 case TileType.Dirt:
                     return dirt;
+                case TileType.WheatSeed:
+                    return new ColoredText("s", ConsoleColor.Green, ConsoleColor.Black);
+                case TileType.CarrotSeed:
+                    return new ColoredText("c", ConsoleColor.Green, ConsoleColor.Black);
                 case TileType.Wheat:
                     return new ColoredText("w", ConsoleColor.Yellow, ConsoleColor.Green);
+                case TileType.Carrot:
+                    return new ColoredText("r", ConsoleColor.DarkYellow, ConsoleColor.Green);
+                case TileType.Calf:
+                    return new ColoredText("a", ConsoleColor.DarkYellow, ConsoleColor.Black);
                 case TileType.Cow:
-                    return new ColoredText("C", ConsoleColor.White, ConsoleColor.Black);
+                    return new ColoredText("A", ConsoleColor.White, ConsoleColor.Black);
                 case TileType.Chicken:
-                    return new ColoredText("c", ConsoleColor.Yellow, ConsoleColor.DarkYellow);
+                    return new ColoredText("b", ConsoleColor.Yellow, ConsoleColor.DarkYellow);
                 default:
                     return dirt;
             }
@@ -223,6 +239,11 @@ namespace MohawkTerminalGame
                 return;
             }
 
+            // Increment placed count for dynamic pricing
+            string icon = FieldInfo.GetIconForTileType(tileType);
+            Item item = Item.GetByIcon(icon);
+            if (item != null) item.AmountPlaced++;
+
             // Update logical grid at current selection
             logicalGrid.SetTileType(selectionX, selectionY, tileType);
 
@@ -246,12 +267,131 @@ namespace MohawkTerminalGame
 
         public static void HarvestTile()
         {
-
+            var space = GetCurrentSelectedSpace();
+            string harvestIcon = null;
+            switch (space.TileType)
+            {
+                case TileType.Wheat:
+                    harvestIcon = Item.Wheat.HarvestItem; // Wheat
+                    break;
+                case TileType.Carrot:
+                    harvestIcon = Item.Carrot.HarvestItem; // Carrot
+                    break;
+                case TileType.Calf:
+                    harvestIcon = Item.Calf.HarvestItem; // Veal
+                    break;
+                case TileType.Cow:
+                    harvestIcon = Item.Cow.HarvestItem; // Beef
+                    break;
+                case TileType.Chicken:
+                    harvestIcon = Item.Chicken.HarvestItem; // Poultry
+                    break;
+                default:
+                    return; // No harvest
+            }
+            if (harvestIcon != null)
+            {
+                Inventory.AddItem(harvestIcon, 1);
+                logicalGrid.SetTileType(selectionX, selectionY, TileType.Dirt);
+                // Redraw the tile to dirt
+                var visual = GetVisualForTileType(TileType.Dirt);
+                var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
+                for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
+                {
+                    for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
+                    {
+                        field.Poke(visualX + xOffset, visualY + yOffset, visual);
+                    }
+                }
+                FieldInfo.OnSelectionChanged();
+            }
         }
 
         public static void FeedTile()
         {
+            var space = GetCurrentSelectedSpace();
+            if (space.TileType == TileType.Calf)
+            {
+                // Need at least one crop in inventory
+                int wheatCount = Inventory.GetItemCount(Item.Wheat.Icon);
+                int carrotCount = Inventory.GetItemCount(Item.Carrot.Icon);
+                if (wheatCount > 0 || carrotCount > 0)
+                {
+                    // Consume one crop, prefer wheat
+                    if (wheatCount > 0)
+                    {
+                        Inventory.RemoveItem(Item.Wheat.Icon, 1);
+                    }
+                    else
+                    {
+                        Inventory.RemoveItem(Item.Carrot.Icon, 1);
+                    }
+                    // Turn calf to cow
+                    logicalGrid.SetTileType(selectionX, selectionY, TileType.Cow);
+                    // Redraw
+                    var visual = GetVisualForTileType(TileType.Cow);
+                    var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
+                    for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
+                    {
+                        for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
+                        {
+                            field.Poke(visualX + xOffset, visualY + yOffset, visual);
+                        }
+                    }
+                    // Reapply highlight
+                    ApplyHighlight();
+                    FieldInfo.OnSelectionChanged();
+                }
+            }
+        }
 
+        public static void UpdateGrowth()
+        {
+            for (int y = 0; y < logicalGrid.Height; y++)
+            {
+                for (int x = 0; x < logicalGrid.Width; x++)
+                {
+                    var space = logicalGrid.GetSpace(x, y);
+                    if (space.TileType != TileType.Dirt)
+                    {
+                        space.GrowthProgress++;
+                        Item item = Item.GetByIcon(FieldInfo.GetIconForTileType(space.TileType));
+                        if (item != null && space.GrowthProgress >= item.GrowthTime)
+                        {
+                            // Change to grown version
+                            if (space.TileType == TileType.WheatSeed)
+                            {
+                                logicalGrid.SetTileType(x, y, TileType.Wheat);
+                                // Redraw the tile
+                                var visual = GetVisualForTileType(TileType.Wheat);
+                                var (visualX, visualY) = logicalGrid.LogicalToVisual(x, y);
+                                for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
+                                {
+                                    for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
+                                    {
+                                        field.Poke(visualX + xOffset, visualY + yOffset, visual);
+                                    }
+                                }
+                            }
+                            else if (space.TileType == TileType.CarrotSeed)
+                            {
+                                logicalGrid.SetTileType(x, y, TileType.Carrot);
+                                // Redraw the tile
+                                var visual = GetVisualForTileType(TileType.Carrot);
+                                var (visualX, visualY) = logicalGrid.LogicalToVisual(x, y);
+                                for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
+                                {
+                                    for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
+                                    {
+                                        field.Poke(visualX + xOffset, visualY + yOffset, visual);
+                                    }
+                                }
+                            }
+                            // Animals are already grown
+                        }
+                    }
+                }
+            }
         }
 
         public static GridSpace GetCurrentSelectedSpace()
@@ -266,15 +406,18 @@ namespace MohawkTerminalGame
 
             switch (space.TileType)
             {
+                case TileType.Wheat:
+                case TileType.Carrot:
+                    interactions.Add(InteractionType.Harvest);
+                    break;
+                case TileType.Calf:
+                    interactions.Add(InteractionType.Feed);
+                    break;
                 case TileType.Cow:
                     interactions.Add(InteractionType.Feed);
                     interactions.Add(InteractionType.Harvest);
                     break;
                 case TileType.Chicken:
-                    interactions.Add(InteractionType.Feed);
-                    interactions.Add(InteractionType.Harvest);
-                    break;
-                case TileType.Wheat:
                     interactions.Add(InteractionType.Harvest);
                     break;
                 case TileType.Dirt:
@@ -292,6 +435,7 @@ namespace MohawkTerminalGame
         public int X;
         public int Y;
         public TileType TileType;
+        public int GrowthProgress = 0; // For crops, increments to GrowthTime
 
         public GridSpace(int x, int y, TileType tileType = TileType.Dirt)
         {
@@ -341,6 +485,7 @@ namespace MohawkTerminalGame
             if (x >= 0 && x < Width && y >= 0 && y < Height)
             {
                 grid[x, y].TileType = tileType;
+                grid[x, y].GrowthProgress = 0; // Reset progress when tile type changes
             }
         }
 

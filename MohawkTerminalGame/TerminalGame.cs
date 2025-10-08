@@ -90,13 +90,27 @@ public class TerminalGame
         }
     }
 
+    private bool shopNeedsRedraw = true;
+
     private void RunShop()
     {
-        shop.Show();
-        string input = Console.ReadLine()?.Trim().ToLower();
+        if (shopNeedsRedraw)
+        {
+            shop.Show();
+            shopNeedsRedraw = false;
+        }
 
-        if (string.IsNullOrWhiteSpace(input))
-            return;
+        string input = null;
+
+        if (Input.IsKeyPressed(ConsoleKey.D1)) input = "1";
+        else if (Input.IsKeyPressed(ConsoleKey.D2)) input = "2";
+        else if (Input.IsKeyPressed(ConsoleKey.D3)) input = "3";
+        else if (Input.IsKeyPressed(ConsoleKey.D4)) input = "4";
+        else if (Input.IsKeyPressed(ConsoleKey.S)) input = "s";
+        else if (Input.IsKeyPressed(ConsoleKey.B)) input = "b";
+        else if (Input.IsKeyPressed(ConsoleKey.E)) input = "exit";
+
+        if (input == null) return;
 
         if (input == "exit")
         {
@@ -107,10 +121,6 @@ public class TerminalGame
         }
 
         shop.HandleInput(input);
-
-        Console.WriteLine();
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey(true);
-        Console.Clear();
+        shopNeedsRedraw = true;
     }
 }

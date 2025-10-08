@@ -7,9 +7,10 @@ namespace MohawkTerminalGame
         // Item counts keyed by icon emojis
         public static readonly Dictionary<string, int> Items = new()
         {
-            ["🐔"] = 0, // Chicken
-            ["🐄"] = 1, // Cow
-            ["🌾"] = 3  // Wheat
+            {Item.WheatSeed.Icon, 3}, // Wheat Seed - placeable
+            {Item.CarrotSeed.Icon, 2}, // Carrot Seed - placeable
+            {Item.Calf.Icon, 1}, // Calf - placeable
+            {Item.Chicken.Icon, 1}  // Chicken - placeable
         };
 
         // Player's money
