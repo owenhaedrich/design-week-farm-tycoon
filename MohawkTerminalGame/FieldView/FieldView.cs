@@ -21,6 +21,23 @@ namespace MohawkTerminalGame
 
     public class FieldView
     {
+        // Initialization
+        public static void Start()
+        {
+            field.ClearWrite();
+            DrawField();
+            ApplyHighlight();
+            FieldInfo.Draw();
+        }
+
+        public static void Unpause()
+        {
+            DrawField();
+            ApplyHighlight();
+            FieldInfo.Draw();
+        }
+
+        // Main execution loop
         public static void Execute()
         {
             int moveX = 0;
@@ -57,8 +74,9 @@ namespace MohawkTerminalGame
                 PlaceTile(TileType.Chicken);
             }
 
-            FieldInfo.Draw();
+            FieldInfo.Update();
 
+            // Keep cursor hidden consistently
             Viewport.HideCursor();
         }
 
@@ -75,14 +93,6 @@ namespace MohawkTerminalGame
         static int previousSelectionY = 0;
         internal static TerminalGridWithColor field = new(Viewport.windowWidth, Viewport.windowHeight, dirt);
         internal static LogicalGrid logicalGrid = new(Viewport.windowWidth / visualScaleX, Viewport.windowHeight / visualScaleY, visualScaleX, visualScaleY);
-
-        // Initialization
-        public static void ViewField()
-        {
-            SyncVisualWithLogical();
-            ApplyHighlight();
-            field.ClearWrite();
-        }
 
         // Map tile types to visual representations
         static ColoredText GetVisualForTileType(TileType tileType)
@@ -102,21 +112,30 @@ namespace MohawkTerminalGame
             }
         }
 
-        static void SyncVisualWithLogical()
+        static void DrawField()
         {
             for (int logicalY = 0; logicalY < logicalGrid.Height; logicalY++)
             {
                 for (int logicalX = 0; logicalX < logicalGrid.Width; logicalX++)
                 {
                     var space = logicalGrid.GetSpace(logicalX, logicalY);
-                    var visual = GetVisualForTileType(space.TileType);
+                    var expectedVisual = GetVisualForTileType(space.TileType);
                     var (visualX, visualY) = logicalGrid.LogicalToVisual(logicalX, logicalY);
+
+                    // Skip the currently highlighted tile
+                    bool isHighlighted = (logicalX == selectionX && logicalY == selectionY);
+                    if (isHighlighted)
+                        continue;
 
                     for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
                     {
                         for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
                         {
-                            field.Poke(visualX + xOffset, visualY + yOffset, visual);
+                            int currentX = visualX + xOffset;
+                            int currentY = visualY + yOffset;
+
+                            field.Poke(currentX, currentY, expectedVisual);
+                            
                         }
                     }
                 }
@@ -138,7 +157,7 @@ namespace MohawkTerminalGame
         }
 
         // Remove highlight from the previous selection by restoring the underlying tile
-        static void RemoveHighlight()
+        public static void RemoveHighlight()
         {
             var (visualX, visualY) = logicalGrid.LogicalToVisual(previousSelectionX, previousSelectionY);
             var previousSpace = logicalGrid.GetSpace(previousSelectionX, previousSelectionY);
@@ -286,24 +305,10 @@ namespace MohawkTerminalGame
             }
         }
 
-        // Convert visual coordinates to logical coordinates
-        public (int logicalX, int logicalY) VisualToLogical(int visualX, int visualY)
-        {
-            return (visualX / VisualTileWidth, visualY / VisualTileHeight);
-        }
-
         // Convert logical coordinates to visual coordinates (top-left corner)
         public (int visualX, int visualY) LogicalToVisual(int logicalX, int logicalY)
         {
             return (logicalX * VisualTileWidth, logicalY * VisualTileHeight);
-        }
-
-        // Get the tile type at visual coordinates
-        public TileType GetTileTypeAtVisual(int visualX, int visualY)
-        {
-            var (logicalX, logicalY) = VisualToLogical(visualX, visualY);
-            var space = GetSpace(logicalX, logicalY);
-            return space.TileType;
         }
     }
 }

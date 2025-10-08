@@ -7,6 +7,8 @@ public enum GameState { Story, Field, Shop, Paused }
 public class TerminalGame
 {
     GameState gameState = GameState.Field;
+    GameState gameStateBeforePause = GameState.Field;
+    bool justPaused = false;
 
     /// Run once before Execute begins
     public void Setup()
@@ -17,7 +19,7 @@ public class TerminalGame
         Terminal.CursorVisible = false;
         Terminal.SetTitle("Title");
 
-        FieldView.ViewField();
+        FieldView.Start();
     }
 
     // Execute() runs based on Program.TerminalExecuteMode (assign to it in Setup).
@@ -27,6 +29,35 @@ public class TerminalGame
     //               Code must finish within the alloted time frame for this to work well.
     public void Execute()
     {
+        // Pausing and Unpausing
+        if (gameState == GameState.Paused)
+        {
+            if (justPaused)
+            {
+                Terminal.SetCursorPosition((Viewport.windowWidth / 2) - 3, Viewport.windowHeight / 2);
+                Terminal.BackgroundColor = ConsoleColor.Black;
+                Terminal.ForegroundColor = ConsoleColor.Red;
+                Terminal.WriteLine("PAUSE");
+                Viewport.HideCursor();
+                justPaused = false;
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.P))
+            {              
+                gameState = gameStateBeforePause;
+                if (gameState == GameState.Field)
+                {
+                    FieldView.Unpause();
+                }
+            }
+        }
+        else if (Input.IsKeyPressed(ConsoleKey.P))
+        {
+            gameStateBeforePause = gameState;
+            gameState = GameState.Paused;
+            justPaused = true;
+        }
+
+        // Playing states
         if (gameState == GameState.Field)
         {
             FieldView.Execute();
