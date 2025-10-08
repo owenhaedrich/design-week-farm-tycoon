@@ -1,92 +1,139 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace MohawkTerminalGame
 {
+    #region Animals
     public class Animal
     {
-        public int baseBuyPrice;
-        public int trueBuyPrice;
-        public int sellPrice;
-        public float dupeTax = 1.1f;
-        public int growthTime;
+        public int startPrice;
+        public int realPrice;
+        public int sellValue;
+        public float dupeTax = 1.1f; 
+        public int growTime; 
         public bool abilityActive;
-        public bool passiveItem;
+        public bool abilityPassive;
 
         // temp variables
         public int amountOwned;
         public int currentTurn;
         public int purchaseTurn;
         public int money;
+        public string name = "";
+
+        public virtual void AdvanceTurn()
+        {
+            currentTurn++;
+        }
     }
 
-    public class Animals
+    // lvl 1
+    public class Chicken : Animal
     {
-        public Animal Chicken() // lvl 1
+        public Chicken()
         {
-            Animal chicken = new Animal();
+            name = "Chicken";
 
-            chicken.baseBuyPrice = 25;
-            chicken.trueBuyPrice = (int)Math.Round(chicken.baseBuyPrice * Math.Pow(chicken.dupeTax, chicken.amountOwned));
+            startPrice = 25;
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
 
-            chicken.sellPrice = 20;
-
-            // each time the turn increases after buying, give the player an egg
-            if (chicken.passiveItem == true)
-            {
-                // either get money each turn or make egg item (TBD)
-                // egg.amountOwned++;
-                // money += 20
-                chicken.passiveItem = false;
-            }
-            else
-            {
-
-            }
-
-            return chicken;
+            sellValue = 20;
         }
-
-        public Animal Cow() // lvl 2
+        public override void AdvanceTurn()
         {
-            Animal cow = new Animal();
+            base.AdvanceTurn();
 
-            cow.baseBuyPrice = 50;
-            cow.trueBuyPrice = (int)Math.Round(cow.baseBuyPrice * Math.Pow(cow.dupeTax, cow.amountOwned));
-
-            // add 1 to growthTime each turn until current is 2 more than purchase
-            cow.purchaseTurn = cow.currentTurn;
-            if (cow.currentTurn < cow.purchaseTurn + 2)
-            {
-                cow.growthTime++;
-            }
-
-
-            if (cow.growthTime >= 2)
-            {
-                cow.sellPrice = 100;
-            }
-            else
-            {
-                cow.sellPrice = 25;
-            }
-
-            // check adjacent plots for cows, if 3 or more are next to eachother, all gain ability. last until 1 turn after there is less than 3 together
-
-            if (cow.abilityActive == true)
-            {
-                cow.sellPrice = cow.sellPrice * 2;
-            }
-            else
-            {
-
-            }
-
-            return cow;
+            money += 20;
         }
     }
+
+    // lvl 2
+    public class Pig : Animal
+    {
+        public Pig()
+        {
+            name = "Pig";
+
+            startPrice = 35;
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+
+            purchaseTurn = currentTurn;
+        }
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+            if (currentTurn < purchaseTurn + 2)
+            {
+                growTime++;
+            }
+            else
+            {
+
+            }
+
+            if (growTime >= 2)
+            {
+                sellValue = 75;
+            }
+            else
+            {
+                sellValue = 25;
+            }
+        }
+    }
+
+    // lvl 3
+    public class Cow : Animal
+    {
+        public Cow()
+        {
+            name = "Cow";
+
+            startPrice = 50;
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+
+            purchaseTurn = currentTurn;
+
+            // check adjacent plots for cows, if 3 or more are next to eachother, all gain ability. lose ability if less than 3 (only if grow 3
+
+            if (abilityActive == true)
+            {
+                // each turn all cows with ability will give milk 
+            }
+            else
+            {
+
+            }
+
+        }
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+
+            if (currentTurn < purchaseTurn + 3)
+            {
+                growTime++;
+            }
+            else
+            {
+
+            }
+
+            if (growTime >= 3)
+            {
+                sellValue = 100;
+            }
+            else
+            {
+                sellValue = 25;
+            }
+        }
+    }
+    #endregion
 
     public class Crop
     {
@@ -104,7 +151,7 @@ namespace MohawkTerminalGame
 
     public class Crops
     {
-        public Crop Wheat() // lvl 1
+        public Crop Wheat() // crop lvl 1
         {
             Crop wheat = new Crop();
 
@@ -131,7 +178,7 @@ namespace MohawkTerminalGame
             return wheat;
         }
 
-        public Crop Carrot() // lvl 2
+        public Crop Carrot() // crop lvl 2
         {
             Crop carrot = new Crop();
 
@@ -157,7 +204,7 @@ namespace MohawkTerminalGame
             return carrot;
         }
 
-        public Crop Corn() // lvl 3
+        public Crop Corn() // crop lvl 4
         {
             Crop corn = new Crop();
 
@@ -217,7 +264,7 @@ namespace MohawkTerminalGame
             return egg;
         }
 
-        public Extra Scarecrow() // event defense
+        public Extra Scarecrow() // defense lvl 5
         {
             Extra scarecrow = new Extra();
 
@@ -241,14 +288,15 @@ namespace MohawkTerminalGame
 
     /// To-Do
     /// 
-    /// public void newTurn (or whatever) actions that happen between / after each turn
+    /// chicken ability - lets you use egg instead of selling to have chance for free chicken
+    /// pig ability - check for carrot, if nearby AND fully grown, make sell 1.5x
+    /// cow ability - check for other cows, if 2 or more nearby AND 2+ fully grown, give 1 milk per grown cow
     /// 
     /// rename variables for easier use
     /// buff animals that are given crops
     /// each crop gives different buff for different time
     /// add more items
-    /// add more animals
-    /// add more crops
+    /// 
     /// ?? add higher tax but decreases each turn you dont buy the item ??
     /// ?? item durability reduces sell value at 1:1 (%) ??
 }
