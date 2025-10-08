@@ -17,13 +17,15 @@ namespace MohawkTerminalGame
         public int growTime; 
         public bool abilityActive;
         public bool abilityPassive;
+        public string name = "";
 
         // temp variables
         public int amountOwned;
         public int currentTurn;
         public int purchaseTurn;
         public int money;
-        public string name = "";
+        public int currentPlot;
+        public int allPlot;
 
         public virtual void AdvanceTurn()
         {
@@ -329,6 +331,7 @@ namespace MohawkTerminalGame
     /// chicken ability - lets you use egg instead of selling to have chance for free chicken
     /// pig ability - check for carrot, if nearby AND fully grown, make sell 1.5x
     /// cow ability - check for other cows, if 2 or more nearby AND 2+ fully grown, give 1 milk per grown cow
+    /// cow - give plot number then check the 8 squares around it with + and - math, if any of those 2 
     /// 
     /// buff animals that are given crops
     /// each crop gives different buff for different time
