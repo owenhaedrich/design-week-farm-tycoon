@@ -15,12 +15,6 @@ namespace MohawkTerminalGame
         static int interactionBarHeight = 1;
         static int timerHeight = 2;
 
-        // Timer
-        static float maxTimer = 30; //seconds
-        static float timer = maxTimer;
-        static int maxTimerTick = Program.TargetFPS; //frames per tick
-        static int timerTick = maxTimerTick;
-
         // Get icon for tile type
         public static string GetIconForTileType(TileType tileType)
         {
@@ -73,24 +67,11 @@ namespace MohawkTerminalGame
                 timerChange = false;
             }
 
-            // Update timer
-            timerTick--;
-            if (timerTick <= 0)
+            // Timer update handled by DayTimer
+            if (DayTimer.TimerHasChanged)
             {
-                timer--;
-                timerTick = maxTimerTick;
-                if (timer < 0)
-                {
-                    timer = maxTimer;
-                    TimerExpired = true;
-                    FieldView.UpdateGrowth(); // Grow crops on day change
-                }
                 timerChange = true;
-            }
-            // Press S to speed up timer
-            if (Input.IsKeyPressed(ConsoleKey.S))
-            {
-                timer -= 10;
+                DayTimer.TimerHasChanged = false;
             }
         }
 
@@ -214,7 +195,7 @@ namespace MohawkTerminalGame
             {
                 Terminal.SetCursorPosition(0, timerY + row);
 
-                float progress = 1 - timer / maxTimer;
+                float progress = 1 - DayTimer.currentTimer / DayTimer.maxTimer;
                 int progressWidth = (int)(Viewport.windowWidth * progress);
                 Terminal.BackgroundColor = ConsoleColor.Red;
                 Terminal.ForegroundColor = ConsoleColor.DarkRed;
@@ -262,6 +243,5 @@ namespace MohawkTerminalGame
         }
 
         public static bool InventoryNeedsRedraw() => Inventory.ItemsChanged;
-        public static bool TimerExpired = false;
     }
 }

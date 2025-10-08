@@ -11,6 +11,7 @@ public class TerminalGame
     bool justPaused = false;
 
     Shop shop = new Shop();
+    Story story = new Story();
 
     /// Run once before Execute begins
     public void Setup()
@@ -21,6 +22,7 @@ public class TerminalGame
         Terminal.CursorVisible = false;
         Terminal.SetTitle("Title");
 
+        DayTimer.ResetDay();
         FieldView.Start();
     }
 
@@ -61,27 +63,36 @@ public class TerminalGame
             return;
         }
 
+        // Update day timer
+        DayTimer.Update();
+
+        // Check for day expiry
+        if (DayTimer.DayExpired)
+        {
+            gameState = GameState.Story;
+        }
+
         // Playing states
         switch (gameState)
         {
+            case GameState.Story:
+                if (story.Execute())
+                {
+                    gameState = GameState.Field;
+                    Console.Clear();
+                    FieldView.Start();
+                }
+                break;
+
             case GameState.Field:
                 FieldView.Execute();
 
-                // Checks if timer in FieldInfo reaches 0, then goes to Shop
-                if (FieldInfo.TimerExpired)
+                if (Input.IsKeyPressed(ConsoleKey.E))
                 {
-                    FieldInfo.TimerExpired = false;
                     gameState = GameState.Shop;
                     Console.Clear();
+                    shopNeedsRedraw = true;
                 }
-
-                // Manually open the shop using s (Uncomment code, useful for debugging)
-             //   if (Input.IsKeyPressed(ConsoleKey.S))
-             //   {
-             //       gameState = GameState.Shop;
-             //       Console.Clear();
-             //   }
-
                 break;
 
             case GameState.Shop:
@@ -108,11 +119,11 @@ public class TerminalGame
         else if (Input.IsKeyPressed(ConsoleKey.D4)) input = "4";
         else if (Input.IsKeyPressed(ConsoleKey.S)) input = "s";
         else if (Input.IsKeyPressed(ConsoleKey.B)) input = "b";
-        else if (Input.IsKeyPressed(ConsoleKey.E)) input = "exit";
+        else if (Input.IsKeyPressed(ConsoleKey.E)) input = "e";
 
         if (input == null) return;
 
-        if (input == "exit")
+        if (input == "e")
         {
             gameState = GameState.Field;
             Console.Clear();
