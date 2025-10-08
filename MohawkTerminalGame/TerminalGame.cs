@@ -19,7 +19,7 @@ public class TerminalGame
         Terminal.CursorVisible = false;
         Terminal.SetTitle("Title");
 
-        FieldView.ViewField();
+        FieldView.Start();
     }
 
     // Execute() runs based on Program.TerminalExecuteMode (assign to it in Setup).
@@ -46,7 +46,7 @@ public class TerminalGame
                 gameState = gameStateBeforePause;
                 if (gameState == GameState.Field)
                 {
-                    FieldView.ViewField();
+                    FieldView.Unpause();
                 }
             }
         }

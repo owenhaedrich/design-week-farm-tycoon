@@ -22,9 +22,17 @@ namespace MohawkTerminalGame
     public class FieldView
     {
         // Initialization
-        public static void ViewField()
+        public static void Start()
         {
-            SyncVisualWithLogical();
+            field.ClearWrite();
+            DrawField();
+            ApplyHighlight();
+            FieldInfo.Draw();
+        }
+
+        public static void Unpause()
+        {
+            DrawField();
             ApplyHighlight();
             FieldInfo.Draw();
         }
@@ -104,21 +112,30 @@ namespace MohawkTerminalGame
             }
         }
 
-        static void SyncVisualWithLogical()
+        static void DrawField()
         {
             for (int logicalY = 0; logicalY < logicalGrid.Height; logicalY++)
             {
                 for (int logicalX = 0; logicalX < logicalGrid.Width; logicalX++)
                 {
                     var space = logicalGrid.GetSpace(logicalX, logicalY);
-                    var visual = GetVisualForTileType(space.TileType);
+                    var expectedVisual = GetVisualForTileType(space.TileType);
                     var (visualX, visualY) = logicalGrid.LogicalToVisual(logicalX, logicalY);
+
+                    // Skip the currently highlighted tile
+                    bool isHighlighted = (logicalX == selectionX && logicalY == selectionY);
+                    if (isHighlighted)
+                        continue;
 
                     for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
                     {
                         for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
                         {
-                            field.Poke(visualX + xOffset, visualY + yOffset, visual);
+                            int currentX = visualX + xOffset;
+                            int currentY = visualY + yOffset;
+
+                            field.Poke(currentX, currentY, expectedVisual);
+                            
                         }
                     }
                 }
@@ -288,24 +305,10 @@ namespace MohawkTerminalGame
             }
         }
 
-        // Convert visual coordinates to logical coordinates
-        public (int logicalX, int logicalY) VisualToLogical(int visualX, int visualY)
-        {
-            return (visualX / VisualTileWidth, visualY / VisualTileHeight);
-        }
-
         // Convert logical coordinates to visual coordinates (top-left corner)
         public (int visualX, int visualY) LogicalToVisual(int logicalX, int logicalY)
         {
             return (logicalX * VisualTileWidth, logicalY * VisualTileHeight);
-        }
-
-        // Get the tile type at visual coordinates
-        public TileType GetTileTypeAtVisual(int visualX, int visualY)
-        {
-            var (logicalX, logicalY) = VisualToLogical(visualX, visualY);
-            var space = GetSpace(logicalX, logicalY);
-            return space.TileType;
         }
     }
 }
