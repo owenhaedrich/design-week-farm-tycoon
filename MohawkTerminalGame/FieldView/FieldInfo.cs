@@ -6,7 +6,7 @@ namespace MohawkTerminalGame
     public class FieldInfo
     {
         // Game variables
-        static int money = 10000;
+        static int money = 100;
         static int[] inventory = [0,1,3]; // Placeholder for inventory. Zero cows, one chicken, three wheat
         static bool moneyChange = true;
         static bool inventoryChange = true;
@@ -69,6 +69,7 @@ namespace MohawkTerminalGame
                 if (timer < 0)
                 {
                     timer = maxTimer;
+                    TimerExpired = true;
                 }
                 timerChange = true;
             }
@@ -204,5 +205,6 @@ namespace MohawkTerminalGame
             }
             return false;
         }
+        public static bool TimerExpired = false;
     }
 }
