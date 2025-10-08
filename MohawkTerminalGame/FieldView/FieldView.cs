@@ -73,8 +73,16 @@ namespace MohawkTerminalGame
             {
                 PlaceTile(TileType.Chicken);
             }
+            else if (Input.IsKeyPressed(ConsoleKey.H))
+            {
+                HarvestTile();
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.F))
+            {
+                FeedTile();
+            }
 
-            FieldInfo.Update();
+                FieldInfo.Update();
 
             // Keep cursor hidden consistently
             Viewport.HideCursor();
@@ -213,6 +221,16 @@ namespace MohawkTerminalGame
 
             // Reapply highlight (the tile placement overwrote it)
             ApplyHighlight();
+        }
+
+        public static void HarvestTile()
+        {
+
+        }
+
+        public static void FeedTile()
+        {
+
         }
 
         public static GridSpace GetCurrentSelectedSpace()
