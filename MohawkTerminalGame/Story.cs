@@ -2,11 +2,14 @@ using System;
 
 namespace MohawkTerminalGame
 {
+    public enum StoryMode { Intro, Progress, Ending }
+
     public class Story
     {
+        public StoryMode Mode;
         private bool needsRedraw = true;
 
-        public bool Execute()
+        public bool PlayAndWait()
         {
             if (needsRedraw)
             {
@@ -17,7 +20,7 @@ namespace MohawkTerminalGame
             if (Console.KeyAvailable || Input.IsKeyPressed(ConsoleKey.Spacebar) || Input.IsKeyPressed(ConsoleKey.Enter))
             {
                 // Any key to proceed
-                DayTimer.ResetDay();
+                needsRedraw = true;
                 return true; // Transition to next day
             }
             return false;
@@ -25,20 +28,37 @@ namespace MohawkTerminalGame
 
         private void Show()
         {
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("╔══════════════════════════════════════════════════════════════════════════════════════════════════════════╗");
-            Console.WriteLine("║                                                                                                      ║");
-            Console.WriteLine("║                          🌟 Story Mode 🌟                                                             ║");
-            Console.WriteLine("║                                                                                                      ║");
-            Console.WriteLine("║  The day has ended on your farm!                                                                    ║");
-            Console.WriteLine("║  Your crops have grown and your animals have thrived.                                               ║");
-            Console.WriteLine("║  As night falls, you reflect on the hard work and look forward to tomorrow.                         ║");
-            Console.WriteLine("║                                                                                                      ║");
-            Console.WriteLine("║  Press any key to start a new day...                                                                ║");
-            Console.WriteLine("║                                                                                                      ║");
-            Console.WriteLine("╚══════════════════════════════════════════════════════════════════════════════════════════════════════════╝");
-            Console.ResetColor();
+            Terminal.Clear();
+            Terminal.ForegroundColor = ConsoleColor.White;
+            Terminal.WriteLine("╔══════════════════════════════════════════════════════════════════════════════════════════════════════════╗");
+            Terminal.WriteLine("║                                                                                                          ║");
+            Terminal.WriteLine("║                          ! The Farm !                                                                    ║");
+            Terminal.WriteLine("║                                                                                                          ║");
+
+            switch (Mode)
+            {
+                case StoryMode.Intro:
+                    Terminal.WriteLine("║  Welcome to the Farm!                                                                               ║");
+                    Terminal.WriteLine("║  -----                                                                                              ║");
+                    Terminal.WriteLine("║ -------                                                                                             ║");
+                    break;
+                case StoryMode.Progress:
+                    Terminal.WriteLine("║  The day has ended on your farm!                                                                    ║");
+                   Terminal.WriteLine($"║  You have ${Inventory.Money} and ${Field.CalculatePassiveIncome()} from eggs.                                                         ║");
+                    Terminal.WriteLine("║  As night falls, you reflect on the hard work and look forward to tomorrow.                         ║");
+                    break;
+                case StoryMode.Ending:
+                    Terminal.WriteLine("║  Congratulations!                                                                                    ║");
+                    Terminal.WriteLine("║  You have successfully completed 10 days of farming.                                                 ║");
+                    Terminal.WriteLine("║  ---------                                                                                           ║");
+                    break;
+            }
+
+            Terminal.WriteLine("║                                                                                                          ║");
+            Terminal.WriteLine("║  Press any key to start a new day...                                                                     ║");
+            Terminal.WriteLine("║                                                                                                          ║");
+            Terminal.WriteLine("╚══════════════════════════════════════════════════════════════════════════════════════════════════════════╝");
+            Terminal.ResetColor();
         }
     }
 }

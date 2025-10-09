@@ -6,12 +6,14 @@ public enum GameState { Story, Field, Shop, Paused }
 
 public class TerminalGame
 {
-    GameState gameState = GameState.Field;
-    GameState gameStateBeforePause = GameState.Field;
+    GameState gameState = GameState.Story;
+    GameState gameStateBeforePause = GameState.Story;
     bool justPaused = false;
 
     Shop shop = new Shop();
     Story story = new Story();
+
+    bool isFirstStory = true;
 
     /// Run once before Execute begins
     public void Setup()
@@ -22,8 +24,8 @@ public class TerminalGame
         Terminal.CursorVisible = false;
         Terminal.SetTitle("Title");
 
-        DayTimer.ResetDay();
-        FieldView.Start();
+        story.Mode = StoryMode.Intro;
+        Field.Start();
     }
 
     // Execute() runs based on Program.TerminalExecuteMode (assign to it in Setup).
@@ -50,7 +52,7 @@ public class TerminalGame
                 gameState = gameStateBeforePause;
                 if (gameState == GameState.Field)
                 {
-                    FieldView.Unpause();
+                    Field.Unpause();
                 }
                 return;
             }
@@ -63,39 +65,56 @@ public class TerminalGame
             return;
         }
 
-        // Update day timer
-        DayTimer.Update();
-
-        // Check for day expiry
-        if (DayTimer.DayExpired)
-        {
-            gameState = GameState.Story;
-        }
-
         // Playing states
         switch (gameState)
         {
             case GameState.Story:
-                if (story.Execute())
+                if (story.PlayAndWait())
                 {
                     gameState = GameState.Field;
-                    Console.Clear();
-                    FieldView.Start();
+                    DayTimer.ResetDay();
+                    Terminal.Clear();
+                    Field.Start();
+                    DayTimer.CheckAndDraw();
+                    isFirstStory = false;
                 }
                 break;
 
             case GameState.Field:
-                FieldView.Execute();
+                // Update day timer
+                DayTimer.Update();
 
-                if (Input.IsKeyPressed(ConsoleKey.E))
+                // Check for day expiry
+                if (DayTimer.DayExpired)
+                {
+                    gameState = GameState.Story;
+                    story.Mode = DayTimer.DayNumber >= 10 ? StoryMode.Ending : StoryMode.Progress;
+                    break;
+                }
+
+                Field.Execute();
+
+                if (Input.IsKeyPressed(ConsoleKey.E) || Input.IsKeyPressed(ConsoleKey.S))
                 {
                     gameState = GameState.Shop;
-                    Console.Clear();
+                    Terminal.Clear();
                     shopNeedsRedraw = true;
                 }
+                DayTimer.CheckAndDraw();
                 break;
 
             case GameState.Shop:
+                // Update day timer
+                DayTimer.Update();
+
+                // Check for day expiry
+                if (DayTimer.DayExpired)
+                {
+                    gameState = GameState.Story;
+                    story.Mode = DayTimer.DayNumber >= 10 ? StoryMode.Ending : StoryMode.Progress;
+                    break;
+                }
+
                 RunShop();
                 break;
         }
@@ -108,30 +127,25 @@ public class TerminalGame
         if (shopNeedsRedraw)
         {
             shop.Show();
+            DayTimer.Draw(); // Always draw timer after showing shop
             shopNeedsRedraw = false;
         }
 
-        string input = null;
+        DayTimer.CheckAndDraw(); // Update timer UI every frame in shop
 
-        if (Input.IsKeyPressed(ConsoleKey.D1)) input = "1";
-        else if (Input.IsKeyPressed(ConsoleKey.D2)) input = "2";
-        else if (Input.IsKeyPressed(ConsoleKey.D3)) input = "3";
-        else if (Input.IsKeyPressed(ConsoleKey.D4)) input = "4";
-        else if (Input.IsKeyPressed(ConsoleKey.S)) input = "s";
-        else if (Input.IsKeyPressed(ConsoleKey.B)) input = "b";
-        else if (Input.IsKeyPressed(ConsoleKey.E)) input = "e";
-
-        if (input == null) return;
-
-        if (input == "e")
+        ShopInputResult result = shop.HandleInput();
+        if (result == ShopInputResult.Handled)
+        {
+            shopNeedsRedraw = true;
+        }
+        else if (result == ShopInputResult.Exit)
         {
             gameState = GameState.Field;
-            Console.Clear();
-            FieldView.Start(); // resume field mode
+            Terminal.Clear();
+            Field.Start(); // resume field mode
+            DayTimer.CheckAndDraw();
             return;
         }
-
-        shop.HandleInput(input);
-        shopNeedsRedraw = true;
+        // else None, do nothing
     }
 }

@@ -4,6 +4,7 @@ namespace MohawkTerminalGame
 {
     public static class DayTimer
     {
+        public static int DayNumber { get; private set; } = 0;
         public static float maxTimer = 30;
         public static float currentTimer = maxTimer;
         public static int maxTick = Program.TargetFPS;
@@ -27,6 +28,14 @@ namespace MohawkTerminalGame
             tick = maxTick;
             dayExpiredFlag = false;
             TimerHasChanged = true;
+            Field.UpdateGrowth();
+            int passiveIncome = Field.CalculatePassiveIncome();
+            if (passiveIncome > 0)
+            {
+                Inventory.AddMoney(passiveIncome);
+            }
+            DayNumber++;
+            Viewport.HideCursor();
         }
 
         public static void Update()
@@ -48,8 +57,45 @@ namespace MohawkTerminalGame
                 }
             }
             // Speed up for testing
-            if (Input.IsKeyPressed(ConsoleKey.S))
-                currentTimer -= 10;
+            if (Input.IsKeyPressed(ConsoleKey.M))
+                currentTimer = -1;
+        }
+
+        public static void CheckAndDraw()
+        {
+            if (TimerHasChanged)
+            {
+                Draw();
+                TimerHasChanged = false;
+            }
+        }
+
+        public static void Draw()
+        {
+            int timerY = Viewport.windowHeight + 1; // Below interaction bar
+
+            for (int row = 0; row < 2; row++)
+            {
+                Terminal.SetCursorPosition(0, timerY + row);
+
+                float progress = 1 - currentTimer / maxTimer;
+                int progressWidth = (int)(Viewport.windowWidth * progress);
+                Terminal.BackgroundColor = ConsoleColor.Red;
+                Terminal.ForegroundColor = ConsoleColor.DarkRed;
+                string timerProgress = new string('-', progressWidth);
+                Terminal.Write(timerProgress);
+
+                Terminal.BackgroundColor = ConsoleColor.DarkGray;
+                Terminal.ForegroundColor = ConsoleColor.White;
+                string timerBackground = new string('|', Viewport.windowWidth - progressWidth);
+                Terminal.Write(timerBackground);
+
+                // Border with black
+                Terminal.BackgroundColor = ConsoleColor.Black;
+                Terminal.ForegroundColor = ConsoleColor.Black;
+                Terminal.SetCursorPosition(Viewport.windowWidth + 1, timerY + row);
+                Terminal.Write(' ');
+            }
         }
     }
 }

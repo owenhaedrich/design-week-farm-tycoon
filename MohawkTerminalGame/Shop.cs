@@ -4,6 +4,8 @@ using System.Linq;
 
 namespace MohawkTerminalGame
 {
+    public enum ShopInputResult { None, Handled, Exit }
+
     public class Shop
     {
         // Shop items with price, icon, and stock
@@ -172,22 +174,52 @@ namespace MohawkTerminalGame
             Console.ForegroundColor = ConsoleColor.White;
         }
 
-        public void HandleInput(string input)
+        public ShopInputResult HandleInput()
         {
-            input = input.ToLower();
+            int num = 0;
+            bool hasInput = false;
 
-            if (input == "s" && !isSellMode)
+            if (Input.IsKeyPressed(ConsoleKey.D1))
+            {
+                num = 1;
+                hasInput = true;
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.D2))
+            {
+                num = 2;
+                hasInput = true;
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.D3))
+            {
+                num = 3;
+                hasInput = true;
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.D4))
+            {
+                num = 4;
+                hasInput = true;
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.S) && !isSellMode)
             {
                 isSellMode = true;
-                return;
+                return ShopInputResult.Handled;
             }
-            if (input == "b" && isSellMode)
+            else if ((Input.IsKeyPressed(ConsoleKey.B) || Input.IsKeyPressed(ConsoleKey.S)) && isSellMode)
             {
                 isSellMode = false;
-                return;
+                return ShopInputResult.Handled;
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.E))
+            {
+                return ShopInputResult.Exit;
             }
 
-            if (int.TryParse(input, out int num))
+            if (!hasInput)
+            {
+                return ShopInputResult.None;
+            }
+
+            if (num > 0)
             {
                 if (isSellMode)
                 {
@@ -196,12 +228,14 @@ namespace MohawkTerminalGame
                     {
                         var item = sellableItems[num - 1];
                         SellItem(item.Name, 1);
+                        return ShopInputResult.Handled;
                     }
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("No item at that number.");
                         Console.ResetColor();
+                        return ShopInputResult.Handled;
                     }
                 }
                 else if (num >= 1 && num <= items.Count)
@@ -212,7 +246,7 @@ namespace MohawkTerminalGame
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Sorry, sold out.");
                         Console.ResetColor();
-                        return;
+                        return ShopInputResult.Handled;
                     }
                     if (Inventory.SpendMoney(item.Price))
                     {
@@ -221,12 +255,14 @@ namespace MohawkTerminalGame
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine($"Bought a {item.Name}!");
                         Console.ResetColor();
+                        return ShopInputResult.Handled;
                     }
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Not enough money.");
                         Console.ResetColor();
+                        return ShopInputResult.Handled;
                     }
                 }
                 else
@@ -234,14 +270,11 @@ namespace MohawkTerminalGame
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Invalid input.");
                     Console.ResetColor();
+                    return ShopInputResult.Handled;
                 }
             }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Invalid input.");
-                Console.ResetColor();
-            }
+
+            return ShopInputResult.Handled;
         }
 
         private void SellItem(string itemName, int amount)

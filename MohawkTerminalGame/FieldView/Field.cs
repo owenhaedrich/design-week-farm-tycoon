@@ -23,7 +23,7 @@ namespace MohawkTerminalGame
         Harvest, // For both animals and crops
     }
 
-    public class FieldView
+    public class Field
     {
         // Initialization
         public static void Start()
@@ -426,6 +426,28 @@ namespace MohawkTerminalGame
             }
 
             return interactions;
+        }
+
+        public static int CalculatePassiveIncome()
+        {
+            int total = 0;
+            for (int y = 0; y < logicalGrid.Height; y++)
+            {
+                for (int x = 0; x < logicalGrid.Width; x++)
+                {
+                    var space = logicalGrid.GetSpace(x, y);
+                    string icon = FieldInfo.GetIconForTileType(space.TileType);
+                    if (icon != null)
+                    {
+                        Item item = Item.GetByIcon(icon);
+                        if (item != null && item.Passive)
+                        {
+                            total += item.PassiveIncome;
+                        }
+                    }
+                }
+            }
+            return total;
         }
     }
 

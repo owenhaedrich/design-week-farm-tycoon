@@ -8,12 +8,7 @@ namespace MohawkTerminalGame
     public class FieldInfo
     {
         // Game variables
-        static bool timerChange = true;
         static bool interactionChange = true;
-
-        // Visual elements
-        static int interactionBarHeight = 1;
-        static int timerHeight = 2;
 
         // Get icon for tile type
         public static string GetIconForTileType(TileType tileType)
@@ -35,6 +30,7 @@ namespace MohawkTerminalGame
         {
             Inventory.MoneyChanged = true;
             Inventory.ItemsChanged = true;
+            interactionChange = true;
             Update();
         }
 
@@ -54,25 +50,7 @@ namespace MohawkTerminalGame
             }
 
             // Interaction Bar
-            if (interactionChange)
-            {
-                DrawInteractionBar();
-                interactionChange = false;
-            }
-
-            // Timer
-            if (timerChange)
-            {
-                DrawTimer();
-                timerChange = false;
-            }
-
-            // Timer update handled by DayTimer
-            if (DayTimer.TimerHasChanged)
-            {
-                timerChange = true;
-                DayTimer.TimerHasChanged = false;
-            }
+            DrawInteractionBar();
         }
 
         static void DrawMoney()
@@ -117,10 +95,12 @@ namespace MohawkTerminalGame
             int itemIndex = 0;
             int GetItemType(string icon)
             {
-                // Plants first
-                if (icon == Item.WheatSeed.Icon || icon == Item.CarrotSeed.Icon || icon == Item.Wheat.Icon || icon == Item.Carrot.Icon) return 0; // Plant
-                if (icon == Item.Calf.Icon || icon == Item.Cow.Icon || icon == Item.Chicken.Icon) return 1; // Animal
-                return 2; // Other
+                // Seeds first
+                if (icon == Item.WheatSeed.Icon || icon == Item.CarrotSeed.Icon) return 0; // Seed
+                // Then animals
+                if (icon == Item.Calf.Icon || icon == Item.Cow.Icon || icon == Item.Chicken.Icon) return 1; // Animal                                                                                                            // Then plants
+                if (icon == Item.Wheat.Icon || icon == Item.Carrot.Icon) return 2; // Plant
+                return 3; // Other
             }
             foreach (var kvp in Inventory.Items.OrderBy(kvp => GetItemType(kvp.Key)).ThenBy(kvp => kvp.Key))
             {
@@ -138,8 +118,8 @@ namespace MohawkTerminalGame
             Terminal.BackgroundColor = ConsoleColor.DarkBlue;
             Terminal.ForegroundColor = ConsoleColor.White;
 
-            var interactions = FieldView.GetAvailableInteractions();
-            var currentSpace = FieldView.GetCurrentSelectedSpace();
+            var interactions = Field.GetAvailableInteractions();
+            var currentSpace = Field.GetCurrentSelectedSpace();
 
             string interactionText;
 
@@ -152,7 +132,7 @@ namespace MohawkTerminalGame
                     interactionStrings.Add(GetInteractionDisplayText(interaction));
                 }
 
-                string tileInfo = $"{currentSpace.TileType} at ({FieldView.selectionX}, {FieldView.selectionY})";
+                string tileInfo = $"{currentSpace.TileType} at ({Field.selectionX}, {Field.selectionY})";
                 interactionText = tileInfo;
                 foreach (var interactionString in interactionStrings)
                 {
@@ -161,7 +141,7 @@ namespace MohawkTerminalGame
             }
             else
             {
-                interactionText = $"{currentSpace.TileType} at ({FieldView.selectionX}, {FieldView.selectionY}) - No interactions available";
+                interactionText = $"{currentSpace.TileType} at ({Field.selectionX}, {Field.selectionY}) - No interactions available";
             }
 
             // Pad the interaction text to fill the entire width
@@ -183,35 +163,6 @@ namespace MohawkTerminalGame
                     return "[H]arvest";
                 default:
                     return interaction.ToString();
-            }
-        }
-
-        static void DrawTimer()
-        {
-            int timerY = Viewport.windowHeight + interactionBarHeight;
-
-            // Progress bar for timer. Progress is red
-            for (int row = 0; row < timerHeight; row++)
-            {
-                Terminal.SetCursorPosition(0, timerY + row);
-
-                float progress = 1 - DayTimer.currentTimer / DayTimer.maxTimer;
-                int progressWidth = (int)(Viewport.windowWidth * progress);
-                Terminal.BackgroundColor = ConsoleColor.Red;
-                Terminal.ForegroundColor = ConsoleColor.DarkRed;
-                string timerProgress = new string('-', progressWidth);
-                Terminal.Write(timerProgress);
-
-                Terminal.BackgroundColor = ConsoleColor.DarkGray;
-                Terminal.ForegroundColor = ConsoleColor.White;
-                string timerBackground = new string('|', Viewport.windowWidth - progressWidth);
-                Terminal.Write(timerBackground);
-
-                // Border with black
-                Terminal.BackgroundColor = ConsoleColor.Black;
-                Terminal.ForegroundColor = ConsoleColor.Black;
-                Terminal.SetCursorPosition(Viewport.windowWidth + 1, timerY + row);
-                Terminal.Write(' ');
             }
         }
 
