@@ -25,6 +25,15 @@ namespace MohawkTerminalGame
         public int currentTurn;
         public int purchaseTurn;
         public int money;
+        public string[,] bonus = new string[,]
+        {
+            { "", "", "", "", "" },
+            { "", "", "", "", "" },
+            { "", "", "", "", "" },
+            { "", "", "", "", "" },
+            { "", "", "", "", "" },
+        };
+
 
         public virtual void AdvanceTurn()
         {
@@ -97,6 +106,8 @@ namespace MohawkTerminalGame
             startPrice = 50;
             realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
 
+           
+
             purchaseTurn = currentTurn;
 
             // check adjacent plots for cows, if 3 or more are next to eachother, all gain ability. lose ability if less than 3 (only if grow 3
@@ -132,6 +143,33 @@ namespace MohawkTerminalGame
             {
                 sellValue = 25;
             }
+
+
+            int rows = bonus.GetLength(0);
+            int cols = bonus.GetLength(1);
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols - 2; col++)
+                {
+                    if (bonus[row, col] == "Cow" && bonus[row, col + 1] == "Cow" && bonus[row, col + 2] == "Cow")
+                    {
+                        money += 20;
+                    }
+                }
+            }
+
+            for (int col = 0; col < cols; col++)
+            {
+                for (int row = 0; row < rows - 2; row++)
+                {
+                    if (bonus[row, col] == "Cow" && bonus[row + 1, col] == "Cow" && bonus[row + 2, col] == "Cow")
+                    {
+                        money += 20;
+                    }
+                }
+            }
+
         }
     }
     #endregion
