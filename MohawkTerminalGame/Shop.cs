@@ -11,10 +11,11 @@ namespace MohawkTerminalGame
         // Shop items with price, icon, and stock
         private List<ShopItem> items = new List<ShopItem>()
         {
-            new ShopItem(Item.WheatSeed, 20),
-            new ShopItem(Item.CarrotSeed, 20),
-            new ShopItem(Item.Calf, 5),
-            new ShopItem(Item.Chicken, 10),
+            new ShopItem(GameItems.WheatSeed, 20),
+            new ShopItem(GameItems.CarrotSeed, 20),
+            new ShopItem(GameItems.Calf, 5),
+            new ShopItem(GameItems.Chicken, 10),
+            new ShopItem(GameItems.Piglet, 5),
         };
 
         private bool isSellMode = false;
@@ -68,7 +69,9 @@ namespace MohawkTerminalGame
             Dictionary<string, string> nameToIcon = items.ToDictionary(i => i.Name, i => i.Icon);
             Dictionary<string, int> inventoryCounts = nameToIcon.ToDictionary(kvp => kvp.Key, kvp => Inventory.GetItemCount(kvp.Key));
 
-            var sellableItems = Item.ItemsByIcon.Values.Where(i => i.SellPrice > 0).OrderBy(i => i.Name).ToList();
+            // Order sellable items to match unified inputs: Wheat, Carrot, Veal, Poultry, Pork
+            var sellOrder = new string[] { "Wheat", "Carrot", "Veal", "Poultry", "Pork" };
+            var sellableItems = sellOrder.Select(name => GameItems.GetByName(name)).ToList();
 
             int maxRows;
 
@@ -204,6 +207,11 @@ namespace MohawkTerminalGame
                 num = 5;
                 hasInput = true;
             }
+            else if (Input.IsKeyPressed(ConsoleKey.D6))
+            {
+                num = 6;
+                hasInput = true;
+            }
             else if (Input.IsKeyPressed(ConsoleKey.S) && !isSellMode)
             {
                 isSellMode = true;
@@ -228,7 +236,9 @@ namespace MohawkTerminalGame
             {
                 if (isSellMode)
                 {
-                    var sellableItems = Item.ItemsByIcon.Values.Where(i => i.SellPrice > 0).OrderBy(i => i.Name).ToList();
+                    // Order to match unified inputs: Wheat, Carrot, Veal, Poultry, Pork
+                    var sellOrder = new string[] { "Wheat", "Carrot", "Veal", "Poultry", "Pork" };
+                    var sellableItems = sellOrder.Select(name => GameItems.GetByName(name)).ToList();
                     if (num >= 1 && num <= sellableItems.Count)
                     {
                         var item = sellableItems[num - 1];
@@ -257,6 +267,7 @@ namespace MohawkTerminalGame
                     {
                         Inventory.AddItem(item.Name, 1);
                         item.Stock--;
+                        item.Stats.boughtToday++;
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine($"Bought a {item.Name}!");
                         Console.ResetColor();
@@ -284,7 +295,7 @@ namespace MohawkTerminalGame
 
         private void SellItem(string itemName, int amount)
         {
-            var item = Item.ItemsByIcon.Values.FirstOrDefault(i => i.Name.Equals(itemName, StringComparison.OrdinalIgnoreCase));
+            var item = GameItems.GetByName(itemName);
             if (item == null)
             {
                 Console.ForegroundColor = ConsoleColor.Red;

@@ -12,10 +12,11 @@ namespace MohawkTerminalGame
 
         private static readonly List<string> placeableItemNames = new()
         {
-            Item.CarrotSeed.Name, // [1]
-            Item.WheatSeed.Name,  // [2]
-            Item.Calf.Name,       // [3]
-            Item.Chicken.Name     // [4]
+            GameItems.WheatSeed.Name, // [1]
+            GameItems.CarrotSeed.Name,  // [2]
+            GameItems.Calf.Name,       // [3]
+            GameItems.Chicken.Name,    // [4]
+            GameItems.Piglet.Name      // [5]
         };
 
         // Get inventory key (item name) for tile type
@@ -23,13 +24,15 @@ namespace MohawkTerminalGame
         {
             switch (tileType)
             {
-                case TileType.WheatSeed: return Item.WheatSeed.Name;
-                case TileType.CarrotSeed: return Item.CarrotSeed.Name;
-                case TileType.Wheat: return Item.Wheat.Name;
-                case TileType.Carrot: return Item.Carrot.Name;
-                case TileType.Calf: return Item.Calf.Name;
-                case TileType.Cow: return Item.Cow.Name;
-                case TileType.Chicken: return Item.Chicken.Name;
+                case TileType.WheatSeed: return GameItems.WheatSeed.Name;
+                case TileType.CarrotSeed: return GameItems.CarrotSeed.Name;
+                case TileType.Wheat: return GameItems.Wheat.Name;
+                case TileType.Carrot: return GameItems.Carrot.Name;
+                case TileType.Calf: return GameItems.Calf.Name;
+                case TileType.Cow: return GameItems.Cow.Name;
+                case TileType.Chicken: return GameItems.Chicken.Name;
+                case TileType.Piglet: return GameItems.Piglet.Name;
+                case TileType.Pig: return GameItems.Pig.Name;
                 default: return null;
             }
         }
@@ -101,11 +104,11 @@ namespace MohawkTerminalGame
             int GetItemType(string name)
             {
                 // Seeds first
-                if (name == Item.WheatSeed.Name || name == Item.CarrotSeed.Name) return 0; // Seed
+                if (name == GameItems.WheatSeed.Name || name == GameItems.CarrotSeed.Name) return 0; // Seed
                 // Then animals
-                if (name == Item.Calf.Name || name == Item.Cow.Name || name == Item.Chicken.Name) return 1; // Animal
+                if (name == GameItems.Calf.Name || name == GameItems.Cow.Name || name == GameItems.Chicken.Name || name == GameItems.Piglet.Name || name == GameItems.Pig.Name) return 1; // Animal
                 // Then plants
-                if (name == Item.Wheat.Name || name == Item.Carrot.Name) return 2; // Plant
+                if (name == GameItems.Wheat.Name || name == GameItems.Carrot.Name) return 2; // Plant
                 return 3; // Other
             }
 

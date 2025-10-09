@@ -9,7 +9,7 @@ namespace MohawkTerminalGame
         Animal
     }
 
-    public class Item
+    public abstract class Item
     {
         public string Name { get; }
         public string Icon { get; }
@@ -18,17 +18,16 @@ namespace MohawkTerminalGame
         public float PriceMultiplier { get; }
         public int GrowthTime { get; }
         public ItemCategory Category { get; }
-        public bool Passive { get; } // For animals
-        public int PassiveIncome { get; } // For passive animals
         public float ConsumeBuff { get; } // For crops
-        public string HarvestItem { get; } // For animals, icon of meat they drop; for crops, their own icon
+        public string HarvestItem { get; } // For animals, name of meat they drop; for crops, their own name
 
-        public int AmountPlaced { get; set; } = 0;
-        public bool IsGrown { get; set; } = false;
+        // Temp variables common to all items
+        public int amountOwned;
+        public int purchaseTurn;
+        public int boughtToday = 0;
 
-        public float BuyPrice => BaseBuyPrice + (PriceMultiplier * AmountPlaced + 1);
-
-        private Item(string name, string icon, float baseBuyPrice, int sellPrice, float priceMultiplier, int growthTime, ItemCategory category, bool passive = false, int passiveIncome = 0, float consumeBuff = 0f, string harvestItem = "")
+        protected Item(string name, string icon, float baseBuyPrice, int sellPrice, float priceMultiplier,
+                       int growthTime, ItemCategory category, float consumeBuff = 0f, string harvestItem = "")
         {
             Name = name;
             Icon = icon;
@@ -37,54 +36,356 @@ namespace MohawkTerminalGame
             PriceMultiplier = priceMultiplier;
             GrowthTime = growthTime;
             Category = category;
-            Passive = category == ItemCategory.Animal ? passive : false;
-            PassiveIncome = passiveIncome;
             ConsumeBuff = category == ItemCategory.Crop ? consumeBuff : 0f;
-            HarvestItem = harvestItem != "" ? harvestItem : (category == ItemCategory.Animal ? "" : icon); // Animals need meat specified, crops harvest themselves
+            HarvestItem = harvestItem != "" ? harvestItem : (category == ItemCategory.Animal ? "" : icon);
         }
 
-        // Static item instances as source of truth
-        public static readonly Item WheatSeed = new Item("Wheat Seed", "🌾🌱", 10f, 0, 1f, 1, ItemCategory.Crop, consumeBuff: 1.15f, harvestItem: "🌾"); // GrowthTime 1 to become Wheat, harvests Wheat
-        public static readonly Item CarrotSeed = new Item("Carrot Seed", "🥕🌱", 11f, 0, 1f, 2, ItemCategory.Crop, consumeBuff: 1.2f, harvestItem: "🥕"); // GrowthTime 2 to become Carrot, harvests Carrot        
-        public static readonly Item Calf = new Item("Calf", "🐂", 15f, 0, 1f, 0, ItemCategory.Animal, passive: false, harvestItem: "🍖"); // Grows to Cow after feeding, harvest Veal
-        public static readonly Item Chicken = new Item("Chicken", "🐔", 17f, 0, 1f, 0, ItemCategory.Animal, passive: true, passiveIncome: 5, harvestItem: "🦆"); // HarvestItem Poultry
-        public static readonly Item Cow = new Item("Cow", "🐄", 20f, 0, 1f, 1, ItemCategory.Animal, passive: false, harvestItem: "🥩"); // HarvestItem Beef
-        public static readonly Item Wheat = new Item("Wheat", "🌾", 30f, 5, 0.1f, 1, ItemCategory.Crop, consumeBuff: 1.15f); // Buy to plant or harvest from WheatSeed tile
-        public static readonly Item Carrot = new Item("Carrot", "🥕", 12f, 16, 0.1f, 2, ItemCategory.Crop, consumeBuff: 1.2f);
-        public static readonly Item Beef = new Item("Beef", "🥩", 0f, 40, 0f, 0, ItemCategory.Animal); // Meat from Cow, buy 0, sell 40
-        public static readonly Item Veal = new Item("Veal", "🍖", 0f, 25, 0f, 0, ItemCategory.Animal); // Meat from Calf, buy 0, sell 25
-        public static readonly Item Poultry = new Item("Poultry", "🦆", 0f, 20, 0f, 0, ItemCategory.Animal); // Meat from Chicken
-
-        // Lookup by icon
-        public static readonly Dictionary<string, Item> ItemsByIcon = new()
+        public virtual void AdvanceTurn()
         {
-            { WheatSeed.Icon, WheatSeed },
-            { CarrotSeed.Icon, CarrotSeed },
-            { Calf.Icon, Calf },           
-            { Chicken.Icon, Chicken },
-            { Cow.Icon, Cow },
-            { Wheat.Icon, Wheat },
-            { Carrot.Icon, Carrot },
-            { Beef.Icon, Beef },
-            { Veal.Icon, Veal },
-            { Poultry.Icon, Poultry }
+            // Field item effects only - called once per placed item
+        }
+
+        public float BuyPrice => BaseBuyPrice * (float)Math.Pow(PriceMultiplier, boughtToday);
+    }
+
+    public class Animal : Item
+    {
+        public int startPrice;
+        public int realPrice;
+        public int sellValue;
+        public float dupeTax = 1.1f;
+        public int growTime;
+        public bool abilityActive;
+        public bool abilityPassive;
+        public string[,] gridBonus = new string[,]
+        {
+            { "", "", "", "", "", "" },
+            { "", "", "", "", "", "" },
+            { "", "", "", "", "", "" },
+            { "", "", "", "", "", "" },
         };
 
-        public static Item GetByIcon(string icon) => ItemsByIcon.GetValueOrDefault(icon);
+        public Animal(string name, string icon, float baseBuyPrice, int sellPrice, float priceMultiplier,
+                      int growthTime, ItemCategory category, float consumeBuff = 0f, string harvestItem = "")
+            : base(name, icon, baseBuyPrice, sellPrice, priceMultiplier, growthTime, category, consumeBuff, harvestItem)
+        {
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+        }
+    }
+
+    public class Chicken : Animal
+    {
+        public Chicken()
+            : base("Chicken", "🐔", 17f, 0, 1.1f, 0, ItemCategory.Animal, harvestItem: "Poultry")
+        {
+            startPrice = 17;
+            sellValue = 15;
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+            int eggValue = 5;
+            Inventory.AddMoney(eggValue);
+        }
+    }
+
+    public class Piglet : Animal
+    {
+        public Piglet()
+            : base("Piglet", "🐷", 20f, 0, 1.1f, 0, ItemCategory.Animal, harvestItem: "")
+        {
+            startPrice = 20;
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+        }
+    }
+
+    public class Pig : Animal
+    {
+        public Pig()
+            : base("Pig", "🐷", 25f, 0, 1.1f, 1, ItemCategory.Animal, harvestItem: "Pork")
+        {
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+
+            int rows = gridBonus.GetLength(0);
+            int cols = gridBonus.GetLength(1);
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols - 2; col++)
+                {
+                    if (gridBonus[row, col] == "Pig" && gridBonus[row, col + 1] == "Carrot" ||
+                        gridBonus[row, col] == "Carrot" && gridBonus[row, col + 1] == "Pig")
+                    {
+                        Inventory.AddMoney(20);
+                    }
+                }
+            }
+
+            for (int col = 0; col < cols; col++)
+            {
+                for (int row = 0; row < rows - 2; row++)
+                {
+                    if (gridBonus[row, col] == "Pig" && gridBonus[row + 1, col] == "Carrot" ||
+                        gridBonus[row, col] == "Pig" && gridBonus[row + 1, col] == "Carrot")
+                    {
+                        Inventory.AddMoney(20);
+                    }
+                }
+            }
+        }
+    }
+
+    public class Calf : Animal
+    {
+        public Calf()
+            : base("Calf", "🐂", 25f, 0, 1.1f, 0, ItemCategory.Animal, harvestItem: "Veal")
+        {
+            startPrice = 25;
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+        }
+    }
+
+    public class Cow : Animal
+    {
+        public Cow()
+            : base("Cow", "🐄", 30f, 0, 1.1f, 1, ItemCategory.Animal, harvestItem: "Beef")
+        {
+            growTime = 1;
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+
+            int rows = gridBonus.GetLength(0);
+            int cols = gridBonus.GetLength(1);
+
+            // 3 cow bonus (milk)
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols - 2; col++)
+                {
+                    if (gridBonus[row, col] == "Cow" && gridBonus[row, col + 1] == "Cow" && gridBonus[row, col + 2] == "Cow")
+                    {
+                        Inventory.AddMoney(20);
+                    }
+                }
+            }
+
+            for (int col = 0; col < cols; col++)
+            {
+                for (int row = 0; row < rows - 2; row++)
+                {
+                    if (gridBonus[row, col] == "Cow" && gridBonus[row + 1, col] == "Cow" && gridBonus[row + 2, col] == "Cow")
+                    {
+                        Inventory.AddMoney(20);
+                    }
+                }
+            }
+        }
+    }
+
+    public class Crop : Item
+    {
+        public int startPrice;
+        public int realPrice;
+        public int sellValue;
+        public float dupeTax = 1.08f;
+        public int growTime;
+
+        public Crop(string name, string icon, float baseBuyPrice, int sellPrice, float priceMultiplier,
+                    int growthTime, ItemCategory category, float consumeBuff = 0f, string harvestItem = "")
+            : base(name, icon, baseBuyPrice, sellPrice, priceMultiplier, growthTime, category, consumeBuff, harvestItem)
+        {
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+        }
+    }
+
+    public class WheatSeed : Crop
+    {
+        public WheatSeed()
+            : base("Wheat Seed", "🌾🌱", 10f, 0, 1.08f, 1, ItemCategory.Crop, consumeBuff: 1.15f, harvestItem: "Wheat")
+        {
+            startPrice = 10;
+            growTime = 1;
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+        }
+    }
+
+    public class Wheat : Crop
+    {
+        public Wheat()
+            : base("Wheat", "🌾", 30f, 20, 1.08f, 1, ItemCategory.Crop, consumeBuff: 1.15f, harvestItem: "Wheat")
+        {
+            sellValue = 20;
+            growTime = 1;
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+        }
+    }
+
+    public class CarrotSeed : Crop
+    {
+        public CarrotSeed()
+            : base("Carrot Seed", "🥕🌱", 20f, 0, 1.08f, 2, ItemCategory.Crop, consumeBuff: 1.2f, harvestItem: "Carrot")
+        {
+            startPrice = 20;
+            growTime = 2;
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+        }
+    }
+
+    public class Carrot : Crop
+    {
+        public Carrot()
+            : base("Carrot", "🥕", 12f, 45, 1.08f, 2, ItemCategory.Crop, consumeBuff: 1.2f, harvestItem: "Carrot")
+        {
+            sellValue = 45;
+            growTime = 2;
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+        }
+    }
+
+    public class Meat : Item
+    {
+        public int sellValue;
+
+        public Meat(string name, string icon, float baseBuyPrice, int sellPrice, float priceMultiplier,
+                    int growthTime, ItemCategory category, float consumeBuff = 0f, string harvestItem = "")
+            : base(name, icon, baseBuyPrice, sellPrice, priceMultiplier, growthTime, category, consumeBuff, harvestItem)
+        {
+        }
+
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+        }
+    }
+
+    public class Beef : Meat
+    {
+        public Beef()
+            : base("Beef", "🥩", 0f, 60, 1.0f, 0, ItemCategory.Animal)
+        {
+            sellValue = 60;
+        }
+    }
+
+    public class Veal : Meat
+    {
+        public Veal()
+            : base("Veal", "🍖", 0f, 20, 1.0f, 0, ItemCategory.Animal)
+        {
+            sellValue = 20;
+        }
+    }
+
+    public class Poultry : Meat
+    {
+        public Poultry()
+            : base("Poultry", "🦆", 0f, 15, 1.0f, 0, ItemCategory.Animal)
+        {
+            sellValue = 15;
+        }
+    }
+
+    public class Pork : Meat
+    {
+        public Pork()
+            : base("Pork", "🥓", 0f, 50, 1.0f, 0, ItemCategory.Animal)
+        {
+            sellValue = 50;
+        }
+    }
+
+    public static class GameItems
+    {
+        public static readonly WheatSeed wheatSeed = new WheatSeed();
+        public static readonly CarrotSeed carrotSeed = new CarrotSeed();
+        public static readonly Calf calf = new Calf();
+        public static readonly Chicken chicken = new Chicken();
+        public static readonly Cow cow = new Cow();
+        public static readonly Piglet piglet = new Piglet();
+        public static readonly Pig pig = new Pig();
+        public static readonly Wheat wheat = new Wheat();
+        public static readonly Carrot carrot = new Carrot();
+        public static readonly Beef beef = new Beef();
+        public static readonly Veal veal = new Veal();
+        public static readonly Poultry poultry = new Poultry();
+        public static readonly Pork pork = new Pork();
+
+        // Keep the original static items for backward compatibility during transition
+        public static readonly Item WheatSeed = wheatSeed;
+        public static readonly Item CarrotSeed = carrotSeed;
+        public static readonly Item Calf = calf;
+public static readonly Item Chicken = chicken;
+        public static readonly Item Cow = cow;
+        public static readonly Item Piglet = piglet;
+        public static readonly Item Pig = pig;
+        public static readonly Item Wheat = wheat;
+        public static readonly Item Carrot = carrot;
+        public static readonly Item Beef = beef;
+        public static readonly Item Veal = veal;
+        public static readonly Item Poultry = poultry;
+        public static readonly Item Pork = pork;
+
+        public static Item GetByName(string name) => ItemsByName.GetValueOrDefault(name);
 
         // Lookup by name
         public static readonly Dictionary<string, Item> ItemsByName = new()
         {
-            { WheatSeed.Name, WheatSeed },
-            { CarrotSeed.Name, CarrotSeed },
-            { Calf.Name, Calf },
-            { Chicken.Name, Chicken },
-            { Cow.Name, Cow },
-            { Wheat.Name, Wheat },
-            { Carrot.Name, Carrot },
-            { Beef.Name, Beef },
-            { Veal.Name, Veal },
-            { Poultry.Name, Poultry }
+            { wheatSeed.Name, wheatSeed },
+            { carrotSeed.Name, carrotSeed },
+            { calf.Name, calf },
+            { chicken.Name, chicken },
+            { cow.Name, cow },
+            { piglet.Name, piglet },
+            { pig.Name, pig },
+            { wheat.Name, wheat },
+            { carrot.Name, carrot },
+            { beef.Name, beef },
+            { veal.Name, veal },
+            { poultry.Name, poultry },
+            { pork.Name, pork }
         };
     }
 }

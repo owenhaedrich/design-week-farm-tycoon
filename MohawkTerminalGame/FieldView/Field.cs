@@ -13,7 +13,9 @@ namespace MohawkTerminalGame
         Carrot,
         Calf,
         Cow,
-        Chicken
+        Chicken,
+        Piglet,
+        Pig
     }
 
     // Interaction Types
@@ -70,11 +72,11 @@ namespace MohawkTerminalGame
             }
             else if (Input.IsKeyPressed(ConsoleKey.D1))
             {
-                PlaceTile(TileType.CarrotSeed); // Placeable: Carrot Seed
+                PlaceTile(TileType.WheatSeed); // Placeable: Wheat Seed
             }
             else if (Input.IsKeyPressed(ConsoleKey.D2))
             {
-                PlaceTile(TileType.WheatSeed); // Placeable: Wheat Seed
+                PlaceTile(TileType.CarrotSeed); // Placeable: Carrot Seed
             }
             else if (Input.IsKeyPressed(ConsoleKey.D3))
             {
@@ -83,6 +85,10 @@ namespace MohawkTerminalGame
             else if (Input.IsKeyPressed(ConsoleKey.D4))
             {
                 PlaceTile(TileType.Chicken); // Placeable: Chicken
+            }
+            else if (Input.IsKeyPressed(ConsoleKey.D5))
+            {
+                PlaceTile(TileType.Piglet); // Placeable: Piglet
             }
             else if (Input.IsKeyPressed(ConsoleKey.H))
             {
@@ -137,6 +143,10 @@ namespace MohawkTerminalGame
                     return new ColoredText("A", ConsoleColor.White, ConsoleColor.Black);
                 case TileType.Chicken:
                     return new ColoredText("b", ConsoleColor.Yellow, ConsoleColor.DarkYellow);
+                case TileType.Piglet:
+                    return new ColoredText("p", ConsoleColor.DarkYellow, ConsoleColor.Black);
+                case TileType.Pig:
+                    return new ColoredText("P", ConsoleColor.Red, ConsoleColor.Black);
                 default:
                     return dirt;
             }
@@ -254,10 +264,7 @@ namespace MohawkTerminalGame
                 return;
             }
 
-            // Increment placed count for dynamic pricing
-            string itemName = FieldInfo.GetInventoryKeyForTileType(tileType);
-            Item item = Item.ItemsByName[itemName];
-            if (item != null) item.AmountPlaced++;
+            // Placed count no longer needed - pricing uses Inventory.GetItemCount
 
             // Update logical grid at current selection
             logicalGrid.SetTileType(selectionX, selectionY, tileType);
@@ -283,30 +290,33 @@ namespace MohawkTerminalGame
         public static void HarvestTile()
         {
             var space = GetCurrentSelectedSpace();
-            string harvestIcon = null;
+            string harvestName = null;
             switch (space.TileType)
             {
                 case TileType.Wheat:
-                    harvestIcon = Item.Wheat.HarvestItem; // Wheat
+                    harvestName = GameItems.Wheat.HarvestItem; // Wheat
                     break;
                 case TileType.Carrot:
-                    harvestIcon = Item.Carrot.HarvestItem; // Carrot
+                    harvestName = GameItems.Carrot.HarvestItem; // Carrot
                     break;
                 case TileType.Calf:
-                    harvestIcon = Item.Calf.HarvestItem; // Veal
+                    harvestName = GameItems.Calf.HarvestItem; // Veal
                     break;
                 case TileType.Cow:
-                    harvestIcon = Item.Cow.HarvestItem; // Beef
+                    harvestName = GameItems.Cow.HarvestItem; // Beef
                     break;
                 case TileType.Chicken:
-                    harvestIcon = Item.Chicken.HarvestItem; // Poultry
+                    harvestName = GameItems.Chicken.HarvestItem; // Poultry
+                    break;
+                case TileType.Pig:
+                    harvestName = GameItems.Pig.HarvestItem; // Pork
                     break;
                 default:
                     return; // No harvest
             }
-            if (harvestIcon != null)
+            if (harvestName != null)
             {
-                Inventory.AddItem(Item.GetByIcon(harvestIcon).Name, 1);
+                Inventory.AddItem(harvestName, 1);
                 logicalGrid.SetTileType(selectionX, selectionY, TileType.Dirt);
                 // Redraw the tile to dirt
                 var visual = GetVisualForTileType(TileType.Dirt);
@@ -328,24 +338,41 @@ namespace MohawkTerminalGame
             var space = GetCurrentSelectedSpace();
             if (space.TileType == TileType.Calf)
             {
-                // Need at least one crop in inventory
-                int wheatCount = Inventory.GetItemCount(Item.Wheat.Name);
-                int carrotCount = Inventory.GetItemCount(Item.Carrot.Name);
-                if (wheatCount > 0 || carrotCount > 0)
+                // Calf only eats wheat
+                int wheatCount = Inventory.GetItemCount(GameItems.Wheat.Name);
+                if (wheatCount > 0)
                 {
-                    // Consume one crop, prefer wheat
-                    if (wheatCount > 0)
-                    {
-                        Inventory.RemoveItem(Item.Wheat.Name, 1);
-                    }
-                    else
-                    {
-                        Inventory.RemoveItem(Item.Carrot.Name, 1);
-                    }
+                    // Consume wheat to grow calf into cow
+                    Inventory.RemoveItem(GameItems.Wheat.Name, 1);
                     // Turn calf to cow
                     logicalGrid.SetTileType(selectionX, selectionY, TileType.Cow);
                     // Redraw
                     var visual = GetVisualForTileType(TileType.Cow);
+                    var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
+                    for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
+                    {
+                        for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
+                        {
+                            field.Poke(visualX + xOffset, visualY + yOffset, visual);
+                        }
+                    }
+                    // Reapply highlight
+                    ApplySelectionVisual();
+                    FieldInfo.OnSelectionChanged();
+                }
+            }
+            else if (space.TileType == TileType.Piglet)
+            {
+                // Piglet only eats carrots
+                int carrotCount = Inventory.GetItemCount(GameItems.Carrot.Name);
+                if (carrotCount > 0)
+                {
+                    // Consume carrot to grow piglet into pig
+                    Inventory.RemoveItem(GameItems.Carrot.Name, 1);
+                    // Turn piglet to pig
+                    logicalGrid.SetTileType(selectionX, selectionY, TileType.Pig);
+                    // Redraw
+                    var visual = GetVisualForTileType(TileType.Pig);
                     var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
                     for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
                     {
@@ -371,7 +398,7 @@ namespace MohawkTerminalGame
                     if (space.TileType != TileType.Dirt)
                     {
                     space.GrowthProgress++;
-                        Item item = Item.ItemsByName[FieldInfo.GetInventoryKeyForTileType(space.TileType)];
+                        Item item = GameItems.ItemsByName[FieldInfo.GetInventoryKeyForTileType(space.TileType)];
                         if (item != null && space.GrowthProgress >= item.GrowthTime)
                         {
                             // Change to grown version
@@ -405,6 +432,9 @@ namespace MohawkTerminalGame
                             }
                             // Animals are already grown
                         }
+
+                        // Advance turn for field item effects
+                        item?.AdvanceTurn();
                     }
                 }
             }
@@ -434,6 +464,12 @@ namespace MohawkTerminalGame
                 case TileType.Chicken:
                     interactions.Add(InteractionType.Harvest);
                     break;
+                case TileType.Piglet:
+                    interactions.Add(InteractionType.Feed);
+                    break;
+                case TileType.Pig:
+                    interactions.Add(InteractionType.Harvest);
+                    break;
                 case TileType.Dirt:
                     // No interactions for dirt
                     break;
@@ -442,27 +478,9 @@ namespace MohawkTerminalGame
             return interactions;
         }
 
-        public static int CalculatePassiveIncome()
-        {
-            int total = 0;
-            for (int y = 0; y < logicalGrid.Height; y++)
-            {
-                for (int x = 0; x < logicalGrid.Width; x++)
-                {
-                    var space = logicalGrid.GetSpace(x, y);
-                    string itemName = FieldInfo.GetInventoryKeyForTileType(space.TileType);
-                    if (itemName != null)
-                    {
-                        Item item = Item.ItemsByName[itemName];
-                        if (item != null && item.Passive)
-                        {
-                            total += item.PassiveIncome;
-                        }
-                    }
-                }
-            }
-            return total;
-        }
+
+
+
     }
 
     // Represents a single space on the logical grid

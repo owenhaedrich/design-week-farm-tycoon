@@ -8,6 +8,7 @@ namespace MohawkTerminalGame
     {
         public StoryMode Mode;
         private bool needsRedraw = true;
+        public static int DailyPassiveIncome { get; set; } // Set externally by game loop
 
         public bool PlayAndWait()
         {
@@ -44,7 +45,7 @@ namespace MohawkTerminalGame
                     break;
                 case StoryMode.Progress:
                     Terminal.WriteLine("║  The day has ended on your farm!                                                                    ║");
-                   Terminal.WriteLine($"║  You have ${Inventory.Money} and ${Field.CalculatePassiveIncome()} from eggs.                                                         ║");
+                   Terminal.WriteLine($"║  You have ${Inventory.Money} and ${Story.DailyPassiveIncome} from eggs.                                                         ║");
                     Terminal.WriteLine("║  As night falls, you reflect on the hard work and look forward to tomorrow.                         ║");
                     break;
                 case StoryMode.Ending:

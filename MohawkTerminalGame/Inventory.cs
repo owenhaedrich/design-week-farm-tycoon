@@ -7,10 +7,11 @@ namespace MohawkTerminalGame
         // Item counts keyed by item names
         public static readonly Dictionary<string, int> Items = new()
         {
-            {Item.WheatSeed.Name, 2}, // Wheat Seed - placeable
-            {Item.CarrotSeed.Name, 1}, // Carrot Seed - placeable
-            {Item.Calf.Name, 1}, // Calf - placeable
-            {Item.Chicken.Name, 1}  // Chicken - placeable
+            {GameItems.WheatSeed.Name, 2}, // Wheat Seed - placeable
+            {GameItems.CarrotSeed.Name, 1}, // Carrot Seed - placeable
+            {GameItems.Calf.Name, 1}, // Calf - placeable
+            {GameItems.Chicken.Name, 1},  // Chicken - placeable
+            {GameItems.Piglet.Name, 0}  // Piglet - placeable
         };
 
         // Player's money

@@ -28,11 +28,15 @@ namespace MohawkTerminalGame
             tick = maxTick;
             dayExpiredFlag = false;
             TimerHasChanged = true;
+            // Track passive income during UpdateGrowth (which calls AdvanceTurn)
+            int moneyBefore = Inventory.Money;
             Field.UpdateGrowth();
-            int passiveIncome = Field.CalculatePassiveIncome();
-            if (passiveIncome > 0)
+            int moneyAfter = Inventory.Money;
+            Story.DailyPassiveIncome = moneyAfter - moneyBefore;
+            // Reset boughtToday for all items
+            foreach (var item in GameItems.ItemsByName.Values)
             {
-                Inventory.AddMoney(passiveIncome);
+                item.boughtToday = 0;
             }
             DayNumber++;
             Viewport.HideCursor();

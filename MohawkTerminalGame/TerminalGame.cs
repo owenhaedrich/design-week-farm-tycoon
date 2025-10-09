@@ -71,11 +71,14 @@ public class TerminalGame
                 if (story.PlayAndWait())
                 {
                     gameState = GameState.Field;
-                    DayTimer.ResetDay();
+                    if (isFirstStory)
+                    {
+                        DayTimer.ResetDay();
+                        isFirstStory = false;
+                    }
                     Terminal.Clear();
                     Field.Start();
                     DayTimer.CheckAndDraw();
-                    isFirstStory = false;
                 }
                 break;
 
@@ -86,6 +89,7 @@ public class TerminalGame
                 // Check for day expiry
                 if (DayTimer.DayExpired)
                 {
+                    DayTimer.ResetDay();
                     gameState = GameState.Story;
                     story.Mode = DayTimer.DayNumber >= 10 ? StoryMode.Ending : StoryMode.Progress;
                     break;
@@ -109,6 +113,7 @@ public class TerminalGame
                 // Check for day expiry
                 if (DayTimer.DayExpired)
                 {
+                    DayTimer.ResetDay();
                     gameState = GameState.Story;
                     story.Mode = DayTimer.DayNumber >= 10 ? StoryMode.Ending : StoryMode.Progress;
                     break;
