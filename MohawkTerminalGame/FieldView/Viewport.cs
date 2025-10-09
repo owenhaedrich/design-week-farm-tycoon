@@ -12,7 +12,7 @@ namespace MohawkTerminalGame
             // Hide cursor by moving it out of the way
             Terminal.BackgroundColor = ConsoleColor.Black;
             Terminal.ForegroundColor = ConsoleColor.Black;
-            Terminal.SetCursorPosition(windowWidth, windowHeight);
+            Terminal.SetCursorPosition(windowWidth, windowHeight + 4);
         }
     }
 }
