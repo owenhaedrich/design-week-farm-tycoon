@@ -81,16 +81,16 @@ namespace MohawkTerminalGame
     public class Chicken : Animal
     {
         public Chicken()
-            : base("Chicken", "🐔", 17f, 0, 1.1f, 0, ItemCategory.Animal, harvestItem: "Poultry")
+            : base("Chicken", "🐔", 20f, 0, 1.1f, 0, ItemCategory.Animal, harvestItem: "Poultry")
         {
-            startPrice = 17;
+            startPrice = 20;
             sellValue = 15;
         }
 
         public override void AdvanceTurn()
         {
             base.AdvanceTurn();
-            int eggValue = 5;
+            int eggValue = 10;
             Inventory.AddMoney(eggValue);
         }
     }
@@ -98,9 +98,9 @@ namespace MohawkTerminalGame
     public class Piglet : Animal
     {
         public Piglet()
-            : base("Piglet", "🐷", 20f, 0, 1.1f, 0, ItemCategory.Animal, harvestItem: "")
+            : base("Piglet", "🐷", 35f, 0, 1.1f, 0, ItemCategory.Animal, harvestItem: "")
         {
-            startPrice = 20;
+            startPrice = 35;
         }
 
         public override void AdvanceTurn()
@@ -112,7 +112,7 @@ namespace MohawkTerminalGame
     public class Pig : Animal
     {
         public Pig()
-            : base("Pig", "🐷", 25f, 0, 1.1f, 1, ItemCategory.Animal, harvestItem: "Pork")
+            : base("Pig", "🐷", 40f, 0, 1.1f, 1, ItemCategory.Animal, harvestItem: "Pork")
         {
         }
 
@@ -331,9 +331,9 @@ namespace MohawkTerminalGame
     public class Pork : Meat
     {
         public Pork()
-            : base("Pork", "🥓", 0f, 50, 1.0f, 0, ItemCategory.Animal)
+            : base("Pork", "🥓", 0f, 85, 1.0f, 0, ItemCategory.Animal)
         {
-            sellValue = 50;
+            sellValue = 85;
         }
     }
 

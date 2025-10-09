@@ -36,33 +36,33 @@ namespace MohawkTerminalGame
                 Console.WriteLine("╔══════════════════════════════════════╦═══════════════════════════════════════╗");
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 string rightHeader = "           Inventory            ";
-                Console.WriteLine($"║         🛒 Welcome to the Shop!       {rightHeader}║");
+                Console.WriteLine($"║         🛒 Welcome to the Shop!      ║  {rightHeader}     ║");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("╠══════════════════════════════════════╬═══════════════════════════════════════╣");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("╔═══════════════════════════════════════════════════════════════════════════════╗");
+                Console.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗");
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"║                          🛒 Welcome to Sell Items!                           ║");
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("╠═══════════════════════════════════════════════════════════════════════════════╣");
+                Console.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
             }
             if (!isSellMode)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 string rightHeader2 = " Items Owned ";
-                Console.WriteLine($"║ Item       Price  Stock              ║{rightHeader2}                         ║");
+                Console.WriteLine($"║ Item          Price      Stock       ║{rightHeader2}                          ║");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("╠══════════════════════════════════════╬═══════════════════════════════════════╣");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine($"║ Item       Sell Price  Qty                                           ║");
+                Console.WriteLine($"║ Item       Sell Price      Qty                                               ║");
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("╠═══════════════════════════════════════════════════════════════════════════════╣");
+                Console.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
             }
 
             // Builds from Inventory.Items
@@ -111,7 +111,7 @@ namespace MohawkTerminalGame
                     }
                     sellText = sellText.PadRight(77);
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine($"║{sellText}║");
+                    Console.WriteLine($"║{sellText} ║");
                 }
                 else
                 {
@@ -162,7 +162,7 @@ namespace MohawkTerminalGame
             else
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("╚═══════════════════════════════════════════════════════════════════════════════╝");
+                Console.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
             }
 
             Console.WriteLine();
