@@ -10,18 +10,26 @@ namespace MohawkTerminalGame
         // Game variables
         static bool interactionChange = true;
 
-        // Get icon for tile type
-        public static string GetIconForTileType(TileType tileType)
+        private static readonly List<string> placeableItemNames = new()
+        {
+            Item.CarrotSeed.Name, // [1]
+            Item.WheatSeed.Name,  // [2]
+            Item.Calf.Name,       // [3]
+            Item.Chicken.Name     // [4]
+        };
+
+        // Get inventory key (item name) for tile type
+        public static string GetInventoryKeyForTileType(TileType tileType)
         {
             switch (tileType)
             {
-                case TileType.WheatSeed: return Item.WheatSeed.Icon;
-                case TileType.CarrotSeed: return Item.CarrotSeed.Icon;
-                case TileType.Wheat: return Item.Wheat.Icon;
-                case TileType.Carrot: return Item.Carrot.Icon;
-                case TileType.Calf: return Item.Calf.Icon;
-                case TileType.Cow: return Item.Cow.Icon;
-                case TileType.Chicken: return Item.Chicken.Icon;
+                case TileType.WheatSeed: return Item.WheatSeed.Name;
+                case TileType.CarrotSeed: return Item.CarrotSeed.Name;
+                case TileType.Wheat: return Item.Wheat.Name;
+                case TileType.Carrot: return Item.Carrot.Name;
+                case TileType.Calf: return Item.Calf.Name;
+                case TileType.Cow: return Item.Cow.Name;
+                case TileType.Chicken: return Item.Chicken.Name;
                 default: return null;
             }
         }
@@ -55,8 +63,8 @@ namespace MohawkTerminalGame
 
         static void DrawMoney()
         {
-            int moneyTopPadding = 2;
-            int moneyRightPadding = 1;
+            int moneyTopPadding = 1;
+            int moneyRightPadding = 9;
             int moneyLeftPadding = 1;
 
             Terminal.SetCursorPosition(Viewport.windowWidth, moneyTopPadding);
@@ -75,7 +83,7 @@ namespace MohawkTerminalGame
                 string moneyBackground = new string(' ', moneyLeftPadding + moneyString.Length + moneyRightPadding);
                 Terminal.Write(moneyBackground);
             }
-            for (int row = moneyTopPadding + 1; row < Viewport.windowHeight; row++)
+            for (int row = moneyTopPadding + 1; row < Viewport.windowHeight + 3; row++)
             {
                 Terminal.SetCursorPosition(Viewport.windowWidth, row);
                 string moneyBackground = new string(' ', moneyLeftPadding + moneyString.Length + moneyRightPadding);
@@ -87,27 +95,53 @@ namespace MohawkTerminalGame
         {
             int inventoryY = 4; // Below money display
             int inventoryX = Viewport.windowWidth;
-            Terminal.SetCursorPosition(inventoryX, inventoryY);
             Terminal.BackgroundColor = ConsoleColor.DarkGray;
             Terminal.ForegroundColor = ConsoleColor.White;
-            // Inventory Title Line
-            Terminal.Write("Inventory: ");
-            int itemIndex = 0;
-            int GetItemType(string icon)
+
+            int GetItemType(string name)
             {
                 // Seeds first
-                if (icon == Item.WheatSeed.Icon || icon == Item.CarrotSeed.Icon) return 0; // Seed
+                if (name == Item.WheatSeed.Name || name == Item.CarrotSeed.Name) return 0; // Seed
                 // Then animals
-                if (icon == Item.Calf.Icon || icon == Item.Cow.Icon || icon == Item.Chicken.Icon) return 1; // Animal                                                                                                            // Then plants
-                if (icon == Item.Wheat.Icon || icon == Item.Carrot.Icon) return 2; // Plant
+                if (name == Item.Calf.Name || name == Item.Cow.Name || name == Item.Chicken.Name) return 1; // Animal
+                // Then plants
+                if (name == Item.Wheat.Name || name == Item.Carrot.Name) return 2; // Plant
                 return 3; // Other
             }
-            foreach (var kvp in Inventory.Items.OrderBy(kvp => GetItemType(kvp.Key)).ThenBy(kvp => kvp.Key))
+
+            var placeableItems = Inventory.Items.Where(kvp => placeableItemNames.Contains(kvp.Key)).OrderBy(kvp => placeableItemNames.IndexOf(kvp.Key));
+            var nonPlaceableItems = Inventory.Items.Where(kvp => !placeableItemNames.Contains(kvp.Key)).OrderBy(kvp => kvp.Key);
+
+            // Placeable section
+            Terminal.SetCursorPosition(inventoryX, inventoryY);
+            Terminal.Write(" Place an Item: ");
+            int itemIndex = 0;
+            int currentY = inventoryY + 1;
+            foreach (var kvp in placeableItems)
             {
-                Terminal.SetCursorPosition(inventoryX, inventoryY + itemIndex + 1);
-                Terminal.Write($"{kvp.Key} x{kvp.Value} ");
+                Terminal.SetCursorPosition(inventoryX, currentY);
+                Terminal.Write($" [{itemIndex + 1}] {kvp.Key} x{kvp.Value} ");
                 itemIndex++;
+                currentY++;
             }
+
+            // Non-placeable section
+            if (nonPlaceableItems.Any())
+            {
+                Terminal.SetCursorPosition(inventoryX, currentY);
+                Terminal.Write(" Inventory: ");
+                currentY++;
+                foreach (var kvp in nonPlaceableItems)
+                {
+                    Terminal.SetCursorPosition(inventoryX, currentY);
+                    Terminal.Write($" {kvp.Key} x{kvp.Value} ");
+                    currentY++;
+                }
+            }
+
+            // Draw shop indicator
+            Terminal.SetCursorPosition(Viewport.windowWidth, Viewport.windowHeight);
+            Terminal.Write(" Go to [S]hop ");
         }
 
         static void DrawInteractionBar()
@@ -169,16 +203,16 @@ namespace MohawkTerminalGame
         // Inventory management methods
         public static bool CanPlaceTile(TileType tileType)
         {
-            string icon = GetIconForTileType(tileType);
-            return icon != null && Inventory.GetItemCount(icon) > 0;
+            string itemName = GetInventoryKeyForTileType(tileType);
+            return itemName != null && Inventory.GetItemCount(itemName) > 0;
         }
 
         public static bool TryPlaceTile(TileType tileType)
         {
-            string icon = GetIconForTileType(tileType);
-            if (icon == null) return true; // Dirt
+            string itemName = GetInventoryKeyForTileType(tileType);
+            if (itemName == null) return true; // Dirt
             if (!CanPlaceTile(tileType)) return false;
-            return Inventory.RemoveItem(icon, 1);
+            return Inventory.RemoveItem(itemName, 1);
         }
 
         public static int GetItemCount(string itemName) => Inventory.GetItemCount(itemName);

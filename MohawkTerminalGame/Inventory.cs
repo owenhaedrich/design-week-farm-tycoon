@@ -4,13 +4,13 @@ namespace MohawkTerminalGame
 {
     public static class Inventory
     {
-        // Item counts keyed by icon emojis
+        // Item counts keyed by item names
         public static readonly Dictionary<string, int> Items = new()
         {
-            {Item.WheatSeed.Icon, 2}, // Wheat Seed - placeable
-            {Item.CarrotSeed.Icon, 1}, // Carrot Seed - placeable
-            {Item.Calf.Icon, 1}, // Calf - placeable
-            {Item.Chicken.Icon, 1}  // Chicken - placeable
+            {Item.WheatSeed.Name, 2}, // Wheat Seed - placeable
+            {Item.CarrotSeed.Name, 1}, // Carrot Seed - placeable
+            {Item.Calf.Name, 1}, // Calf - placeable
+            {Item.Chicken.Name, 1}  // Chicken - placeable
         };
 
         // Player's money
@@ -40,31 +40,31 @@ namespace MohawkTerminalGame
         }
 
         // Get item count
-        public static int GetItemCount(string icon)
+        public static int GetItemCount(string itemName)
         {
-            return Items.ContainsKey(icon) ? Items[icon] : 0;
+            return Items.ContainsKey(itemName) ? Items[itemName] : 0;
         }
 
         // Add items
-        public static void AddItem(string icon, int amount)
+        public static void AddItem(string itemName, int amount)
         {
-            if (Items.ContainsKey(icon))
+            if (Items.ContainsKey(itemName))
             {
-                Items[icon] += amount;
+                Items[itemName] += amount;
             }
             else
             {
-                Items[icon] = amount;
+                Items[itemName] = amount;
             }
             ItemsChanged = true;
         }
 
         // Remove items (returns false if not enough)
-        public static bool RemoveItem(string icon, int amount)
+        public static bool RemoveItem(string itemName, int amount)
         {
-            if (Items.ContainsKey(icon) && Items[icon] >= amount)
+            if (Items.ContainsKey(itemName) && Items[itemName] >= amount)
             {
-                Items[icon] -= amount;
+                Items[itemName] -= amount;
                 ItemsChanged = true;
                 return true;
             }

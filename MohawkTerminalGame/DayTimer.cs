@@ -4,7 +4,7 @@ namespace MohawkTerminalGame
 {
     public static class DayTimer
     {
-        public static int DayNumber { get; private set; } = 0;
+        public static int DayNumber = 0;
         public static float maxTimer = 30;
         public static float currentTimer = maxTimer;
         public static int maxTick = Program.TargetFPS;
@@ -89,13 +89,16 @@ namespace MohawkTerminalGame
                 Terminal.ForegroundColor = ConsoleColor.White;
                 string timerBackground = new string('|', Viewport.windowWidth - progressWidth);
                 Terminal.Write(timerBackground);
-
-                // Border with black
-                Terminal.BackgroundColor = ConsoleColor.Black;
-                Terminal.ForegroundColor = ConsoleColor.Black;
-                Terminal.SetCursorPosition(Viewport.windowWidth + 1, timerY + row);
-                Terminal.Write(' ');
             }
+
+            // Draw day number
+            Terminal.BackgroundColor = ConsoleColor.DarkGray;
+            Terminal.ForegroundColor = ConsoleColor.White;
+            Terminal.SetCursorPosition(Viewport.windowWidth + 1, timerY);
+            Terminal.Write($" Day {DayNumber} / 10 ");
+
+            // Reset Cursor
+            Viewport.HideCursor();
         }
     }
 }

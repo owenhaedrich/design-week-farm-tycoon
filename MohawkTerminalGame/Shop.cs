@@ -65,8 +65,8 @@ namespace MohawkTerminalGame
             }
 
             // Builds from Inventory.Items
-            Dictionary<string, string> nameToIcon = items.ToDictionary(i => i.Name.ToLower(), i => i.Icon);
-            Dictionary<string, int> inventoryCounts = nameToIcon.ToDictionary(kvp => kvp.Key, kvp => Inventory.GetItemCount(kvp.Value));
+            Dictionary<string, string> nameToIcon = items.ToDictionary(i => i.Name, i => i.Icon);
+            Dictionary<string, int> inventoryCounts = nameToIcon.ToDictionary(kvp => kvp.Key, kvp => Inventory.GetItemCount(kvp.Key));
 
             var sellableItems = Item.ItemsByIcon.Values.Where(i => i.SellPrice > 0).OrderBy(i => i.Name).ToList();
 
@@ -102,7 +102,7 @@ namespace MohawkTerminalGame
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         sellText += $"{item.SellPrice,5} ";
                         Console.ForegroundColor = ConsoleColor.Green;
-                        sellText += $"{Inventory.GetItemCount(item.Icon),3} ";
+                        sellText += $"{Inventory.GetItemCount(item.Name),3} ";
                         Console.ForegroundColor = ConsoleColor.Magenta;
                         sellText += $" {item.Icon}";
                     }
@@ -199,6 +199,11 @@ namespace MohawkTerminalGame
                 num = 4;
                 hasInput = true;
             }
+            else if (Input.IsKeyPressed(ConsoleKey.D5))
+            {
+                num = 5;
+                hasInput = true;
+            }
             else if (Input.IsKeyPressed(ConsoleKey.S) && !isSellMode)
             {
                 isSellMode = true;
@@ -250,7 +255,7 @@ namespace MohawkTerminalGame
                     }
                     if (Inventory.SpendMoney(item.Price))
                     {
-                        Inventory.AddItem(item.Icon, 1);
+                        Inventory.AddItem(item.Name, 1);
                         item.Stock--;
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine($"Bought a {item.Name}!");
@@ -288,7 +293,7 @@ namespace MohawkTerminalGame
                 return;
             }
 
-            if (Inventory.RemoveItem(item.Icon, amount))
+            if (Inventory.RemoveItem(item.Name, amount))
             {
                 int earn = item.SellPrice * amount;
                 Inventory.AddMoney(earn);

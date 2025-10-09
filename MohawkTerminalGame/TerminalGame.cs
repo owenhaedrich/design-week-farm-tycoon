@@ -25,7 +25,6 @@ public class TerminalGame
         Terminal.SetTitle("Title");
 
         story.Mode = StoryMode.Intro;
-        Field.Start();
     }
 
     // Execute() runs based on Program.TerminalExecuteMode (assign to it in Setup).

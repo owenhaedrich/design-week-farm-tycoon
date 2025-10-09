@@ -29,15 +29,17 @@ namespace MohawkTerminalGame
         public static void Start()
         {
             field.ClearWrite();
+            lastFlashTime = Time.ElapsedMilliseconds;
+            isHighlightVisible = true;
             DrawField();
-            ApplyHighlight();
+            ApplySelectionVisual();
             FieldInfo.Draw();
         }
 
         public static void Unpause()
         {
             DrawField();
-            ApplyHighlight();
+            ApplySelectionVisual();
             FieldInfo.Draw();
         }
 
@@ -47,19 +49,20 @@ namespace MohawkTerminalGame
             int moveX = 0;
             int moveY = 0;
 
-            if (Input.IsKeyPressed(ConsoleKey.RightArrow))
+            if (Input.IsKeyDown(ConsoleKey.RightArrow))
                 moveX++;
-            if (Input.IsKeyPressed(ConsoleKey.LeftArrow))
+            if (Input.IsKeyDown(ConsoleKey.LeftArrow))
                 moveX--;
-            if (Input.IsKeyPressed(ConsoleKey.DownArrow))
+            if (Input.IsKeyDown(ConsoleKey.DownArrow))
                 moveY++;
-            if (Input.IsKeyPressed(ConsoleKey.UpArrow))
+            if (Input.IsKeyDown(ConsoleKey.UpArrow))
                 moveY--;
 
 
             if (moveX != 0 || moveY != 0)
             {
                 MoveSelection(moveX, moveY);
+                ApplySelectionVisual();
             }
 
             if (Input.IsKeyPressed(ConsoleKey.Spacebar) || Input.IsKeyPressed(ConsoleKey.Enter))
@@ -67,11 +70,11 @@ namespace MohawkTerminalGame
             }
             else if (Input.IsKeyPressed(ConsoleKey.D1))
             {
-                PlaceTile(TileType.WheatSeed); // Placeable: Wheat Seed
+                PlaceTile(TileType.CarrotSeed); // Placeable: Carrot Seed
             }
             else if (Input.IsKeyPressed(ConsoleKey.D2))
             {
-                PlaceTile(TileType.CarrotSeed); // Placeable: Carrot Seed
+                PlaceTile(TileType.WheatSeed); // Placeable: Wheat Seed
             }
             else if (Input.IsKeyPressed(ConsoleKey.D3))
             {
@@ -91,16 +94,19 @@ namespace MohawkTerminalGame
             }
 
             FieldInfo.Update();
-
+            
             // Keep cursor hidden consistently
             Viewport.HideCursor();
         }
 
         // Visual elements
-        static ColoredText highlight = new("X", ConsoleColor.Red, ConsoleColor.Black);
         static ColoredText dirt = new("░", ConsoleColor.DarkYellow, ConsoleColor.DarkYellow);
         static int visualScaleX = 8;
         static int visualScaleY = 4;
+
+        // Flashing highlight
+        static bool isHighlightVisible = true;
+        static long lastFlashTime;
 
         // Game elements
         public static int selectionX = 0;
@@ -160,22 +166,31 @@ namespace MohawkTerminalGame
 
                             field.Poke(currentX, currentY, expectedVisual);
 
-                        }
                     }
                 }
             }
+            ApplySelectionVisual();
+        }
         }
 
-        // Apply highlight to the currently selected logical tile
-        static void ApplyHighlight()
+        static ColoredText CreateHighlightedVisual()
         {
+            var selectedSpace = logicalGrid.GetSpace(selectionX, selectionY);
+            var normalVisual = GetVisualForTileType(selectedSpace.TileType);
+            return new ColoredText(normalVisual.text, normalVisual.fgColor, ConsoleColor.Red);
+        }
+
+        static void ApplySelectionVisual()
+        {
+            var selectedSpace = logicalGrid.GetSpace(selectionX, selectionY);
+            var visual = isHighlightVisible ? CreateHighlightedVisual() : GetVisualForTileType(selectedSpace.TileType);
             var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
 
             for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
             {
                 for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
                 {
-                    field.Poke(visualX + xOffset, visualY + yOffset, highlight);
+                    field.Poke(visualX + xOffset, visualY + yOffset, visual);
                 }
             }
         }
@@ -214,7 +229,7 @@ namespace MohawkTerminalGame
             if (selectionX != previousSelectionX || selectionY != previousSelectionY)
             {
                 RemoveHighlight();
-                ApplyHighlight();
+                ApplySelectionVisual();
                 FieldInfo.OnSelectionChanged();
             }
         }
@@ -240,8 +255,8 @@ namespace MohawkTerminalGame
             }
 
             // Increment placed count for dynamic pricing
-            string icon = FieldInfo.GetIconForTileType(tileType);
-            Item item = Item.GetByIcon(icon);
+            string itemName = FieldInfo.GetInventoryKeyForTileType(tileType);
+            Item item = Item.ItemsByName[itemName];
             if (item != null) item.AmountPlaced++;
 
             // Update logical grid at current selection
@@ -259,7 +274,7 @@ namespace MohawkTerminalGame
             }
 
             // Reapply highlight (the tile placement overwrote it)
-            ApplyHighlight();
+            ApplySelectionVisual();
 
             // Update interactions
             FieldInfo.OnSelectionChanged();
@@ -291,7 +306,7 @@ namespace MohawkTerminalGame
             }
             if (harvestIcon != null)
             {
-                Inventory.AddItem(harvestIcon, 1);
+                Inventory.AddItem(Item.GetByIcon(harvestIcon).Name, 1);
                 logicalGrid.SetTileType(selectionX, selectionY, TileType.Dirt);
                 // Redraw the tile to dirt
                 var visual = GetVisualForTileType(TileType.Dirt);
@@ -303,6 +318,7 @@ namespace MohawkTerminalGame
                         field.Poke(visualX + xOffset, visualY + yOffset, visual);
                     }
                 }
+                ApplySelectionVisual();
                 FieldInfo.OnSelectionChanged();
             }
         }
@@ -313,18 +329,18 @@ namespace MohawkTerminalGame
             if (space.TileType == TileType.Calf)
             {
                 // Need at least one crop in inventory
-                int wheatCount = Inventory.GetItemCount(Item.Wheat.Icon);
-                int carrotCount = Inventory.GetItemCount(Item.Carrot.Icon);
+                int wheatCount = Inventory.GetItemCount(Item.Wheat.Name);
+                int carrotCount = Inventory.GetItemCount(Item.Carrot.Name);
                 if (wheatCount > 0 || carrotCount > 0)
                 {
                     // Consume one crop, prefer wheat
                     if (wheatCount > 0)
                     {
-                        Inventory.RemoveItem(Item.Wheat.Icon, 1);
+                        Inventory.RemoveItem(Item.Wheat.Name, 1);
                     }
                     else
                     {
-                        Inventory.RemoveItem(Item.Carrot.Icon, 1);
+                        Inventory.RemoveItem(Item.Carrot.Name, 1);
                     }
                     // Turn calf to cow
                     logicalGrid.SetTileType(selectionX, selectionY, TileType.Cow);
@@ -339,7 +355,7 @@ namespace MohawkTerminalGame
                         }
                     }
                     // Reapply highlight
-                    ApplyHighlight();
+                    ApplySelectionVisual();
                     FieldInfo.OnSelectionChanged();
                 }
             }
@@ -354,8 +370,8 @@ namespace MohawkTerminalGame
                     var space = logicalGrid.GetSpace(x, y);
                     if (space.TileType != TileType.Dirt)
                     {
-                        space.GrowthProgress++;
-                        Item item = Item.GetByIcon(FieldInfo.GetIconForTileType(space.TileType));
+                    space.GrowthProgress++;
+                        Item item = Item.ItemsByName[FieldInfo.GetInventoryKeyForTileType(space.TileType)];
                         if (item != null && space.GrowthProgress >= item.GrowthTime)
                         {
                             // Change to grown version
@@ -411,8 +427,6 @@ namespace MohawkTerminalGame
                     interactions.Add(InteractionType.Harvest);
                     break;
                 case TileType.Calf:
-                    interactions.Add(InteractionType.Feed);
-                    break;
                 case TileType.Cow:
                     interactions.Add(InteractionType.Feed);
                     interactions.Add(InteractionType.Harvest);
@@ -436,10 +450,10 @@ namespace MohawkTerminalGame
                 for (int x = 0; x < logicalGrid.Width; x++)
                 {
                     var space = logicalGrid.GetSpace(x, y);
-                    string icon = FieldInfo.GetIconForTileType(space.TileType);
-                    if (icon != null)
+                    string itemName = FieldInfo.GetInventoryKeyForTileType(space.TileType);
+                    if (itemName != null)
                     {
-                        Item item = Item.GetByIcon(icon);
+                        Item item = Item.ItemsByName[itemName];
                         if (item != null && item.Passive)
                         {
                             total += item.PassiveIncome;
