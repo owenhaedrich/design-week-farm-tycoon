@@ -58,7 +58,7 @@ namespace MohawkTerminalGame
             }
             // Speed up for testing
             if (Input.IsKeyPressed(ConsoleKey.M))
-                currentTimer = -1;
+                currentTimer = 1;
         }
 
         public static void CheckAndDraw()

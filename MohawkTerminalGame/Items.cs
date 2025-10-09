@@ -26,7 +26,7 @@ namespace MohawkTerminalGame
         public int AmountPlaced { get; set; } = 0;
         public bool IsGrown { get; set; } = false;
 
-        public float BuyPrice => BaseBuyPrice * (PriceMultiplier * AmountPlaced + 1);
+        public float BuyPrice => BaseBuyPrice + (PriceMultiplier * AmountPlaced + 1);
 
         private Item(string name, string icon, float baseBuyPrice, int sellPrice, float priceMultiplier, int growthTime, ItemCategory category, bool passive = false, int passiveIncome = 0, float consumeBuff = 0f, string harvestItem = "")
         {
@@ -44,11 +44,11 @@ namespace MohawkTerminalGame
         }
 
         // Static item instances as source of truth
-        public static readonly Item WheatSeed = new Item("Wheat Seed", "🌾🌱", 10f, 0, 0.5f, 1, ItemCategory.Crop, consumeBuff: 1.15f, harvestItem: "🌾"); // GrowthTime 1 to become Wheat, harvests Wheat
-        public static readonly Item CarrotSeed = new Item("Carrot Seed", "🥕🌱", 11f, 0, 0.5f, 2, ItemCategory.Crop, consumeBuff: 1.2f, harvestItem: "🥕"); // GrowthTime 2 to become Carrot, harvests Carrot        
-        public static readonly Item Calf = new Item("Calf", "🐂", 15f, 0, 0.5f, 0, ItemCategory.Animal, passive: false, harvestItem: "🍖"); // Grows to Cow after feeding, harvest Veal
-        public static readonly Item Cow = new Item("Cow", "🐄", 20f, 0, 0.5f, 1, ItemCategory.Animal, passive: false, harvestItem: "🥩"); // HarvestItem Beef
-        public static readonly Item Chicken = new Item("Chicken", "🐔", 17f, 0, 0.02f, 0, ItemCategory.Animal, passive: true, passiveIncome: 5, harvestItem: "🦆"); // HarvestItem Poultry
+        public static readonly Item WheatSeed = new Item("Wheat Seed", "🌾🌱", 10f, 0, 1f, 1, ItemCategory.Crop, consumeBuff: 1.15f, harvestItem: "🌾"); // GrowthTime 1 to become Wheat, harvests Wheat
+        public static readonly Item CarrotSeed = new Item("Carrot Seed", "🥕🌱", 11f, 0, 1f, 2, ItemCategory.Crop, consumeBuff: 1.2f, harvestItem: "🥕"); // GrowthTime 2 to become Carrot, harvests Carrot        
+        public static readonly Item Calf = new Item("Calf", "🐂", 15f, 0, 1f, 0, ItemCategory.Animal, passive: false, harvestItem: "🍖"); // Grows to Cow after feeding, harvest Veal
+        public static readonly Item Chicken = new Item("Chicken", "🐔", 17f, 0, 1f, 0, ItemCategory.Animal, passive: true, passiveIncome: 5, harvestItem: "🦆"); // HarvestItem Poultry
+        public static readonly Item Cow = new Item("Cow", "🐄", 20f, 0, 1f, 1, ItemCategory.Animal, passive: false, harvestItem: "🥩"); // HarvestItem Beef
         public static readonly Item Wheat = new Item("Wheat", "🌾", 30f, 5, 0.1f, 1, ItemCategory.Crop, consumeBuff: 1.15f); // Buy to plant or harvest from WheatSeed tile
         public static readonly Item Carrot = new Item("Carrot", "🥕", 12f, 16, 0.1f, 2, ItemCategory.Crop, consumeBuff: 1.2f);
         public static readonly Item Beef = new Item("Beef", "🥩", 0f, 40, 0f, 0, ItemCategory.Animal); // Meat from Cow, buy 0, sell 40
