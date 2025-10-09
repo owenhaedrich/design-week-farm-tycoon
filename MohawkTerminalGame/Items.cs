@@ -7,15 +7,13 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace MohawkTerminalGame
 {
-    // lvl - turns untill grown
-    #region Animals
     public class Animal
     {
         public int startPrice;
         public int realPrice;
         public int sellValue;
-        public float dupeTax = 1.1f; 
-        public int growTime; 
+        public float dupeTax = 1.1f;
+        public int growTime;
         public bool abilityActive;
         public bool abilityPassive;
         public string name = "";
@@ -25,13 +23,12 @@ namespace MohawkTerminalGame
         public int currentTurn;
         public int purchaseTurn;
         public int money;
-        public string[,] bonus = new string[,]
+        public string[,] gridBonus = new string[,]
         {
-            { "", "", "", "", "" },
-            { "", "", "", "", "" },
-            { "", "", "", "", "" },
-            { "", "", "", "", "" },
-            { "", "", "", "", "" },
+            { "", "", "", "", "", "" },
+            { "", "", "", "", "", "" },
+            { "", "", "", "", "", "" },
+            { "", "", "", "", "", "" },
         };
 
 
@@ -41,118 +38,60 @@ namespace MohawkTerminalGame
         }
     }
 
-    // lvl 1
     public class Chicken : Animal
     {
         public Chicken()
         {
             name = "Chicken";
 
-            startPrice = 30;
-            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+            startPrice = 15;
 
-            sellValue = 20;
+            sellValue = 15;
         }
         public override void AdvanceTurn()
         {
             base.AdvanceTurn();
 
-            money += 15;
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+
+            money += 10;
         }
     }
 
-    // lvl 2
+    public class Piglet : Animal
+    {
+        public Piglet()
+        {
+            name = "Piglet";
+
+            startPrice = 20;
+        }
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+        }
+    }
     public class Pig : Animal
     {
         public Pig()
         {
             name = "Pig";
-
-            startPrice = 35;
-            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
-
-            purchaseTurn = currentTurn;
         }
         public override void AdvanceTurn()
         {
-            base.AdvanceTurn();
-            if (currentTurn < purchaseTurn + 2)
-            {
-                growTime++;
-            }
-            else
-            {
+            base.AdvanceTurn(); 
 
-            }
+            int rows = gridBonus.GetLength(0);
+            int cols = gridBonus.GetLength(1);
 
-            if (growTime >= 2)
-            {
-                sellValue = 75;
-            }
-            else
-            {
-                sellValue = 25;
-            }
-        }
-    }
-
-    // lvl 3
-    public class Cow : Animal
-    {
-        public Cow()
-        {
-            name = "Cow";
-
-            startPrice = 50;
-            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
-
-           
-
-            purchaseTurn = currentTurn;
-
-            // check adjacent plots for cows, if 3 or more are next to eachother, all gain ability. lose ability if less than 3 (only if grow 3
-
-            if (abilityActive == true)
-            {
-                // each turn all cows with ability will give milk 
-            }
-            else
-            {
-
-            }
-
-        }
-        public override void AdvanceTurn()
-        {
-            base.AdvanceTurn();
-
-            if (currentTurn < purchaseTurn + 3)
-            {
-                growTime++;
-            }
-            else
-            {
-
-            }
-
-            if (growTime >= 3)
-            {
-                sellValue = 100;
-            }
-            else
-            {
-                sellValue = 25;
-            }
-
-
-            int rows = bonus.GetLength(0);
-            int cols = bonus.GetLength(1);
-
+            
             for (int row = 0; row < rows; row++)
             {
                 for (int col = 0; col < cols - 2; col++)
                 {
-                    if (bonus[row, col] == "Cow" && bonus[row, col + 1] == "Cow" && bonus[row, col + 2] == "Cow")
+                    if (gridBonus[row, col] == "Pig" && gridBonus[row, col + 1] == "Carrot" || gridBonus[row, col] == "Carrot" && gridBonus[row, col + 1] == "Pig")
                     {
                         money += 20;
                     }
@@ -163,7 +102,63 @@ namespace MohawkTerminalGame
             {
                 for (int row = 0; row < rows - 2; row++)
                 {
-                    if (bonus[row, col] == "Cow" && bonus[row + 1, col] == "Cow" && bonus[row + 2, col] == "Cow")
+                    if (gridBonus[row, col] == "Pig" && gridBonus[row + 1, col] == "Carrot" || gridBonus[row, col] == "Pig" && gridBonus[row + 1, col] == "Carrot")
+                    {
+                        money += 20;
+                    }
+                }
+            }
+        }
+    }
+
+    public class Calf : Animal
+    {
+        public Calf()
+        {
+            name = "Calf";
+
+            startPrice = 25;
+
+        }
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+        }
+    }
+    public class Cow : Animal
+    {
+        public Cow()
+        {
+            name = "Cow";
+
+            growTime = 1;
+        }
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+
+            int rows = gridBonus.GetLength(0);
+            int cols = gridBonus.GetLength(1);
+
+            // 3 cow bonus (milk)
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols - 2; col++)
+                {
+                    if (gridBonus[row, col] == "Cow" && gridBonus[row, col + 1] == "Cow" && gridBonus[row, col + 2] == "Cow")
+                    {
+                        money += 20;
+                    }
+                }
+            }
+
+            for (int col = 0; col < cols; col++)
+            {
+                for (int row = 0; row < rows - 2; row++)
+                {
+                    if (gridBonus[row, col] == "Cow" && gridBonus[row + 1, col] == "Cow" && gridBonus[row + 2, col] == "Cow")
                     {
                         money += 20;
                     }
@@ -172,10 +167,7 @@ namespace MohawkTerminalGame
 
         }
     }
-    #endregion
 
-    // lvl - turns untill grown
-    #region Crops
     public class Crop
     {
         public int startPrice;
@@ -197,180 +189,100 @@ namespace MohawkTerminalGame
         }
     }
 
-    // lvl 1
+    public class WheatSeed : Crop
+    {
+        public WheatSeed()
+        {
+            name = "WheatSeed";
+
+            startPrice = 10;
+
+            growTime = 1;
+        }
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+        }
+    }
     public class Wheat : Crop
     {
         public Wheat()
         {
             name = "Wheat";
 
-            startPrice = 25;
-            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+            sellValue = 20;
 
-            purchaseTurn = currentTurn;
+            growTime = 1;
+        }
+        public override void AdvanceTurn()
+        {
+            base.AdvanceTurn();
+        }
+    }
+
+    public class CarrotSeed : Crop
+    {
+        public CarrotSeed()
+        {
+            name = "CarrotSeed";
+
+            startPrice = 20;
+
+            growTime = 2;
         }
         public override void AdvanceTurn()
         {
             base.AdvanceTurn();
 
-            if (currentTurn < purchaseTurn + 1)
-            {
-                growTime++;
-            }
-            else
-            {
-
-            }
-
-            if (growTime >= 1)
-            {
-                sellValue = 45;
-            }
-            else
-            {
-                sellValue = 5;
-            }
+            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
         }
     }
-
-    // lvl 2
     public class Carrot : Crop
     {
         public Carrot()
         {
             name = "Carrot";
 
-            startPrice = 55;
-            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
+            sellValue = 45;
 
-            purchaseTurn = currentTurn;
+            growTime = 2;
         }
         public override void AdvanceTurn()
         {
             base.AdvanceTurn();
-
-            if (currentTurn < purchaseTurn + 2)
-            {
-                growTime++;
-            }
-            else
-            {
-
-            }
-
-            if (growTime >= 2)
-            {
-                sellValue = 80;
-            }
-            else
-            {
-                sellValue = 30;
-            }
         }
     }
-
-    // lvl 4
-    public class Corn : Crop
+    
+    public class Meat
     {
-        public Corn()
-        {
-            name = "Corn";
-
-            startPrice = 110;
-            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
-
-            purchaseTurn = currentTurn;
-        }
-        public override void AdvanceTurn()
-        {
-            base.AdvanceTurn();
-
-            if (currentTurn < purchaseTurn + 4)
-            {
-                growTime++;
-            }
-            else
-            {
-
-            }
-
-            if (growTime >= 4)
-            {
-                sellValue = 140;
-            }
-            else
-            {
-                sellValue = 70;
-            }
-        }
-
-    }
-    #endregion
-
-    // lvl - turns untill broken
-    #region Extras
-    public class Extra
-    {
-        public int startPrice;
-        public int realPrice;
-        public float dupeTax = 1.11f;
-        public int sellPrice;
-        public int usedSellPrice;
-        public int maxDurability;
-        public int currentDurability;
-        public float reduceDurability;
-        public double ability;
-        public string name = "";
-
-        // Temp
-        public int currentTurn;
-        public int purchaseTurn;
+        public int sellValue;
         public int amountOwned;
-        public int amountPlaced;
-
-        public virtual void AdvanceTurn()
-        {
-            currentTurn++;
-        }
+        public int money;
     }
 
-    // lvl 5
-    public class Scarecrow : Extra
+    public class Beef : Meat
     {
-        public Scarecrow()
+        public Beef()
         {
-            name = "Scarecrow";
-
-            startPrice = 100;
-            realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
-
-            maxDurability = 5;
-            currentDurability = maxDurability;
-
-            sellPrice = 20;
-        }
-        public override void AdvanceTurn()
-        {
-            base.AdvanceTurn();
-
-            if (currentDurability > 0)
-            {
-                currentDurability--;
-            }
-            else
-            {
-                amountPlaced--;
-            }
-
-            if (currentDurability < maxDurability)
-            {
-                sellPrice = sellPrice - ((sellPrice/5) * (maxDurability - currentDurability));
-            }
-            else
-            {
-
-            }
+            sellValue = 60;
         }
     }
-    #endregion
+
+    public class Veal : Meat
+    {
+        public Veal()
+        {
+            sellValue = 20;
+        }
+    }
+
+    public class Poultry : Meat
+    {
+        public Poultry()
+        {
+            sellValue = 15;
+        }
+    }
 }
