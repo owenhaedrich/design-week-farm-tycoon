@@ -25,8 +25,6 @@ namespace MohawkTerminalGame
         public int currentTurn;
         public int purchaseTurn;
         public int money;
-        public int currentPlot;
-        public int allPlot;
 
         public virtual void AdvanceTurn()
         {
@@ -41,7 +39,7 @@ namespace MohawkTerminalGame
         {
             name = "Chicken";
 
-            startPrice = 25;
+            startPrice = 30;
             realPrice = (int)Math.Round(startPrice * Math.Pow(dupeTax, amountOwned));
 
             sellValue = 20;
@@ -50,7 +48,7 @@ namespace MohawkTerminalGame
         {
             base.AdvanceTurn();
 
-            money += 20;
+            money += 15;
         }
     }
 
@@ -335,21 +333,6 @@ namespace MohawkTerminalGame
 
             }
         }
-
     }
     #endregion
-
-    /// To-Do
-    /// 
-    /// chicken ability - lets you use egg instead of selling to have chance for free chicken
-    /// pig ability - check for carrot, if nearby AND fully grown, make sell 1.5x
-    /// cow ability - check for other cows, if 2 or more nearby AND 2+ fully grown, give 1 milk per grown cow
-    /// cow - give plot number then check the 8 squares around it with + and - math, if any of 2 are cows then activate buff
-    /// 
-    /// buff animals that are given crops
-    /// each crop gives different buff for different time
-    /// 
-    /// add more items
-    /// 
-    /// ?? add higher tax but decreases each turn you dont buy the item ??
 }
