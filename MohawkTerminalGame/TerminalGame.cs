@@ -1,4 +1,5 @@
 ﻿using System;
+using DefaultNamespace;
 
 namespace MohawkTerminalGame;
 
@@ -20,7 +21,7 @@ public class TerminalGame
         Program.TargetFPS = 20;
         Terminal.CursorVisible = false;
         Terminal.SetTitle("Title");
-
+        IntroText.displayText();
         FieldView.Start();
     }
 
