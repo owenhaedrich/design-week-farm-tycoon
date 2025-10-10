@@ -111,7 +111,7 @@ namespace MohawkTerminalGame
                     }
                     sellText = sellText.PadRight(78);
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine($"║{sellText}║");
+                    Console.WriteLine($"║{sellText} ║");
                 }
                 else
                 {

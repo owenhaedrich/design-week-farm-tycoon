@@ -15,7 +15,7 @@ namespace MohawkTerminalGame
         };
 
         // Player's money
-        public static int Money = 10;
+        public static int Money = 20;
 
         // Flags for UI redraw (integration with FieldInfo drawing)
         public static bool MoneyChanged = true;
