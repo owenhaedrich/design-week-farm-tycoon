@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MohawkTerminalGame
 {
@@ -56,10 +57,9 @@ namespace MohawkTerminalGame
                         "",
                         "It is several days after barely surviving that great battle and you are beginning to",
                         "realize that raising and managing an undead army takes a lot of money… Money which you",
-                        "don’t currently have. (perhaps the local bank would have been part of your planned",
-                        "conquest?)",
+                        "don’t currently have.",
                         "",
-                        "Now you have demonic debt collectors* hot on your tail doing what they do best**. You",
+                        "Now you have demonic debt collectors hot on your tail doing what they do best. You",
                         "have 5 days to pay up for your undead army, or else it seems like they’re keen to let the",
                         "general public know where to find you and how exactly to repay you.",
                         "",
@@ -70,12 +70,7 @@ namespace MohawkTerminalGame
                         "money to the debt collectors!",
                         "",
                         "It would maybe be in your best interest to start sooner rather than later.",
-                        "",
-                        "* These aren’t actually demon debt collectors, they’re just debt collectors who are very",
-                        "“demonic” in their methods, which I suppose is redundant because which debt collectors",
-                        "aren’t?",
-                        "",
-                        "** Collecting debts… If you needed that clarified."
+                        ""
                     };
                     foreach (string line in storyLines)
                     {
@@ -90,9 +85,30 @@ namespace MohawkTerminalGame
                     Terminal.WriteLine("║  As night falls, you reflect on the hard work and look forward to tomorrow.                         ║");
                     break;
                 case StoryMode.Ending:
-                    Terminal.WriteLine("║  Congratulations!                                                                                    ║");
+                    if (Inventory.Money > 1000)
+                    {
+                        Terminal.WriteLine("║  Congratulations Tlzchangor!                                                                     ║");
+                        Terminal.WriteLine("║  You managed to pay off your debts completely! That’s almost unheard of!                         ║");
+                        Terminal.WriteLine("║  Having escaped the threat of rightfully being punished for your abhorrent crimes you are scot free to attempt a sequel of this whole zombie army thing!        ║");
+                        Terminal.WriteLine("║  Maybe this time the debt collectors need to be added to the horde…                              ║");
+                    }
+                    else if (Inventory.Money == 1000)
+                    {
+                        Terminal.WriteLine("║  Well Tlzchangor,                                                                                ║");
+                        Terminal.WriteLine("║  you managed to keep the debt collectors off of you - though it cost you almost every last penny you had.                         ║");
+                        Terminal.WriteLine("║  Despite being safe from physical harm, you are NOT safe from the greatest danger of all: poverty. You will now be forced to spend the rest of your time in the Shade Vale toiling away and working a regular job instead of living your dream of creating vast hordes of lifeless corpses.        ║");
+                        Terminal.WriteLine("║  MBut hey, you’re still alive I suppose so Victory Accomplished?                                 ║");
+                    }
+                    else if (Inventory.Money < 1000)
+                    {
+                        Terminal.WriteLine("║  Uh oh… Those galloping horses spell the end for poor ol’ Tlzchangor.                            ║");
+                        Terminal.WriteLine("║  Well this is it I guess.The townsfolk approach and you doubt that they learned about forgiveness in the last 10 days.                         ║");
+                        Terminal.WriteLine("║  Well suppose it’s pretty justified to be completely fair to the townsfolk.They must think so because they’re very happy to end your crazed farming spree in a particularly violent manner.        ║");
+                        Terminal.WriteLine("║  Too bad you can’t resurrect YOURSELF because: YOU ARE DEAD…                             ║");
+                    }
+                    /*Terminal.WriteLine("║  Congratulations!                                                                                    ║");
                     Terminal.WriteLine("║  You have successfully completed 10 days of farming.                                                 ║");
-                    Terminal.WriteLine("║  ---------                                                                                           ║");
+                    Terminal.WriteLine("║  ---------                                                                                           ║");*/
                     break;
             }
 
