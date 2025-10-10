@@ -125,30 +125,65 @@ namespace MohawkTerminalGame
         // Map tile types to visual representations
         static ColoredText GetVisualForTileType(TileType tileType)
         {
+            GetFgColorAndBgForTileType(tileType, out ConsoleColor fg, out ConsoleColor bg);
+            return new ColoredText(FieldIcons.Icons[TileType.Dirt], fg, bg);
+        }
+
+        static ConsoleColor GetFgColorForTileType(TileType tileType)
+        {
             switch (tileType)
             {
-                case TileType.Dirt:
-                    return dirt;
-                case TileType.WheatSeed:
-                    return new ColoredText("s", ConsoleColor.Green, ConsoleColor.Black);
-                case TileType.CarrotSeed:
-                    return new ColoredText("c", ConsoleColor.Green, ConsoleColor.Black);
-                case TileType.Wheat:
-                    return new ColoredText("w", ConsoleColor.Yellow, ConsoleColor.Green);
-                case TileType.Carrot:
-                    return new ColoredText("r", ConsoleColor.DarkYellow, ConsoleColor.Green);
-                case TileType.Calf:
-                    return new ColoredText("a", ConsoleColor.DarkYellow, ConsoleColor.Black);
-                case TileType.Cow:
-                    return new ColoredText("A", ConsoleColor.White, ConsoleColor.Black);
-                case TileType.Chicken:
-                    return new ColoredText("b", ConsoleColor.Yellow, ConsoleColor.DarkYellow);
-                case TileType.Piglet:
-                    return new ColoredText("p", ConsoleColor.DarkYellow, ConsoleColor.Black);
-                case TileType.Pig:
-                    return new ColoredText("P", ConsoleColor.Red, ConsoleColor.Black);
-                default:
-                    return dirt;
+                case TileType.Dirt: return ConsoleColor.DarkYellow;
+                case TileType.WheatSeed: case TileType.Wheat: return ConsoleColor.White;
+                case TileType.CarrotSeed: case TileType.Carrot: return ConsoleColor.DarkYellow;
+                case TileType.Calf: return ConsoleColor.DarkYellow;
+                case TileType.Cow: return ConsoleColor.White;
+                case TileType.Chicken: return ConsoleColor.Yellow;
+                case TileType.Piglet: return ConsoleColor.DarkYellow;
+                case TileType.Pig: return ConsoleColor.Red;
+                default: return ConsoleColor.White;
+            }
+        }
+
+        static void GetFgColorAndBgForTileType(TileType tileType, out ConsoleColor fg, out ConsoleColor bg)
+        {
+            fg = GetFgColorForTileType(tileType);
+            bg = ConsoleColor.DarkGreen;
+            if (tileType == TileType.Dirt)
+            {
+                bg = ConsoleColor.DarkYellow;
+            }
+        }
+
+        static void DrawTile(int logicalX, int logicalY, TileType tileType, ConsoleColor bg = ConsoleColor.Black)
+        {
+            var (visualX, visualY) = logicalGrid.LogicalToVisual(logicalX, logicalY);
+            GetFgColorAndBgForTileType(tileType, out ConsoleColor defaultFg, out ConsoleColor defaultBg);
+            if (bg == ConsoleColor.Black) bg = defaultBg; // Use default bg if not overridden (e.g., for non-highlighted)
+            var fg = defaultFg;
+
+            var icon = FieldIcons.Icons[tileType];
+            var lines = icon.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // First, fill the entire tile with the background
+            for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
+            {
+                for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
+                {
+                    field.Poke(visualX + xOffset, visualY + yOffset, new ColoredText(" ", fg, bg));
+                }
+            }
+
+            // Then, draw the icon on top
+            int lineY = 0;
+            foreach (var line in lines)
+            {
+                for (int lineX = 0; lineX < line.Length; lineX++)
+                {
+                    var ct = new ColoredText(line[lineX].ToString(), fg, bg);
+                    field.Poke(visualX + lineX, visualY + lineY, ct);
+                }
+                lineY++;
             }
         }
 
@@ -159,66 +194,30 @@ namespace MohawkTerminalGame
                 for (int logicalX = 0; logicalX < logicalGrid.Width; logicalX++)
                 {
                     var space = logicalGrid.GetSpace(logicalX, logicalY);
-                    var expectedVisual = GetVisualForTileType(space.TileType);
-                    var (visualX, visualY) = logicalGrid.LogicalToVisual(logicalX, logicalY);
 
                     // Skip the currently highlighted tile
                     bool isHighlighted = (logicalX == selectionX && logicalY == selectionY);
                     if (isHighlighted)
                         continue;
 
-                    for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
-                    {
-                        for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
-                        {
-                            int currentX = visualX + xOffset;
-                            int currentY = visualY + yOffset;
-
-                            field.Poke(currentX, currentY, expectedVisual);
-
-                    }
+                    DrawTile(logicalX, logicalY, space.TileType);
                 }
             }
             ApplySelectionVisual();
-        }
-        }
-
-        static ColoredText CreateHighlightedVisual()
-        {
-            var selectedSpace = logicalGrid.GetSpace(selectionX, selectionY);
-            var normalVisual = GetVisualForTileType(selectedSpace.TileType);
-            return new ColoredText(normalVisual.text, normalVisual.fgColor, ConsoleColor.Red);
         }
 
         static void ApplySelectionVisual()
         {
             var selectedSpace = logicalGrid.GetSpace(selectionX, selectionY);
-            var visual = isHighlightVisible ? CreateHighlightedVisual() : GetVisualForTileType(selectedSpace.TileType);
-            var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
-
-            for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
-            {
-                for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
-                {
-                    field.Poke(visualX + xOffset, visualY + yOffset, visual);
-                }
-            }
+            ConsoleColor bg = isHighlightVisible ? ConsoleColor.Red : ConsoleColor.Black;
+            DrawTile(selectionX, selectionY, selectedSpace.TileType, bg);
         }
 
         // Remove highlight from the previous selection by restoring the underlying tile
         public static void RemoveHighlight()
         {
-            var (visualX, visualY) = logicalGrid.LogicalToVisual(previousSelectionX, previousSelectionY);
             var previousSpace = logicalGrid.GetSpace(previousSelectionX, previousSelectionY);
-            var visual = GetVisualForTileType(previousSpace.TileType);
-
-            for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
-            {
-                for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
-                {
-                    field.Poke(visualX + xOffset, visualY + yOffset, visual);
-                }
-            }
+            DrawTile(previousSelectionX, previousSelectionY, previousSpace.TileType);
         }
 
         public static void MoveSelection(int x, int y)
@@ -269,16 +268,7 @@ namespace MohawkTerminalGame
             // Update logical grid at current selection
             logicalGrid.SetTileType(selectionX, selectionY, tileType);
 
-            var visual = GetVisualForTileType(tileType);
-            var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
-
-            for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
-            {
-                for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
-                {
-                    field.Poke(visualX + xOffset, visualY + yOffset, visual);
-                }
-            }
+            DrawTile(selectionX, selectionY, tileType);
 
             // Reapply highlight (the tile placement overwrote it)
             ApplySelectionVisual();
@@ -319,15 +309,7 @@ namespace MohawkTerminalGame
                 Inventory.AddItem(harvestName, 1);
                 logicalGrid.SetTileType(selectionX, selectionY, TileType.Dirt);
                 // Redraw the tile to dirt
-                var visual = GetVisualForTileType(TileType.Dirt);
-                var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
-                for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
-                {
-                    for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
-                    {
-                        field.Poke(visualX + xOffset, visualY + yOffset, visual);
-                    }
-                }
+                DrawTile(selectionX, selectionY, TileType.Dirt);
                 ApplySelectionVisual();
                 FieldInfo.OnSelectionChanged();
             }
@@ -347,15 +329,7 @@ namespace MohawkTerminalGame
                     // Turn calf to cow
                     logicalGrid.SetTileType(selectionX, selectionY, TileType.Cow);
                     // Redraw
-                    var visual = GetVisualForTileType(TileType.Cow);
-                    var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
-                    for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
-                    {
-                        for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
-                        {
-                            field.Poke(visualX + xOffset, visualY + yOffset, visual);
-                        }
-                    }
+                    DrawTile(selectionX, selectionY, TileType.Cow);
                     // Reapply highlight
                     ApplySelectionVisual();
                     FieldInfo.OnSelectionChanged();
@@ -372,15 +346,7 @@ namespace MohawkTerminalGame
                     // Turn piglet to pig
                     logicalGrid.SetTileType(selectionX, selectionY, TileType.Pig);
                     // Redraw
-                    var visual = GetVisualForTileType(TileType.Pig);
-                    var (visualX, visualY) = logicalGrid.LogicalToVisual(selectionX, selectionY);
-                    for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
-                    {
-                        for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
-                        {
-                            field.Poke(visualX + xOffset, visualY + yOffset, visual);
-                        }
-                    }
+                    DrawTile(selectionX, selectionY, TileType.Pig);
                     // Reapply highlight
                     ApplySelectionVisual();
                     FieldInfo.OnSelectionChanged();
@@ -406,29 +372,13 @@ namespace MohawkTerminalGame
                             {
                                 logicalGrid.SetTileType(x, y, TileType.Wheat);
                                 // Redraw the tile
-                                var visual = GetVisualForTileType(TileType.Wheat);
-                                var (visualX, visualY) = logicalGrid.LogicalToVisual(x, y);
-                                for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
-                                {
-                                    for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
-                                    {
-                                        field.Poke(visualX + xOffset, visualY + yOffset, visual);
-                                    }
-                                }
+                                DrawTile(x, y, TileType.Wheat);
                             }
                             else if (space.TileType == TileType.CarrotSeed)
                             {
                                 logicalGrid.SetTileType(x, y, TileType.Carrot);
                                 // Redraw the tile
-                                var visual = GetVisualForTileType(TileType.Carrot);
-                                var (visualX, visualY) = logicalGrid.LogicalToVisual(x, y);
-                                for (int yOffset = 0; yOffset < logicalGrid.VisualTileHeight; yOffset++)
-                                {
-                                    for (int xOffset = 0; xOffset < logicalGrid.VisualTileWidth; xOffset++)
-                                    {
-                                        field.Poke(visualX + xOffset, visualY + yOffset, visual);
-                                    }
-                                }
+                                DrawTile(x, y, TileType.Carrot);
                             }
                             // Animals are already grown
                         }

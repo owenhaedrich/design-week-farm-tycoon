@@ -36,41 +36,41 @@ namespace MohawkTerminalGame
                 Console.WriteLine("╔══════════════════════════════════════╦═══════════════════════════════════════╗");
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 string rightHeader = "           Inventory            ";
-                Console.WriteLine($"║         🛒 Welcome to the Shop!       {rightHeader}║");
+                Console.WriteLine($"║{"         🛒 Welcome to the Shop!      "}║{rightHeader.PadRight(39)}║");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("╠══════════════════════════════════════╬═══════════════════════════════════════╣");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("╔═══════════════════════════════════════════════════════════════════════════════╗");
+                Console.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗");
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"║                          🛒 Welcome to Sell Items!                           ║");
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("╠═══════════════════════════════════════════════════════════════════════════════╣");
+                Console.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
             }
             if (!isSellMode)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 string rightHeader2 = " Items Owned ";
-                Console.WriteLine($"║ Item       Price  Stock              ║{rightHeader2}                         ║");
+                Console.WriteLine($"║{" Item       Price  Stock              ".PadRight(38)}║{rightHeader2.PadRight(39)}║");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("╠══════════════════════════════════════╬═══════════════════════════════════════╣");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine($"║ Item       Sell Price  Qty                                           ║");
+                Console.WriteLine($"║ Item       Sell Price  Qty                                                   ║");
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("╠═══════════════════════════════════════════════════════════════════════════════╣");
+                Console.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
             }
 
             // Builds from Inventory.Items
             Dictionary<string, string> nameToIcon = items.ToDictionary(i => i.Name, i => i.Icon);
             Dictionary<string, int> inventoryCounts = nameToIcon.ToDictionary(kvp => kvp.Key, kvp => Inventory.GetItemCount(kvp.Key));
 
-            // Order sellable items to match unified inputs: Wheat, Carrot, Veal, Poultry, Pork
-            var sellOrder = new string[] { "Wheat", "Carrot", "Veal", "Poultry", "Pork" };
+            // Order sellable items to match unified inputs: Wheat, Carrot, Beef, Veal, Poultry, Pork
+            var sellOrder = new string[] { "Wheat", "Carrot", "Beef", "Veal", "Poultry", "Pork" };
             var sellableItems = sellOrder.Select(name => GameItems.GetByName(name)).ToList();
 
             int maxRows;
@@ -103,13 +103,13 @@ namespace MohawkTerminalGame
                         sellText += $"{i+1}. ";
                         sellText += $"{item.Name,-10} ";
                         Console.ForegroundColor = ConsoleColor.Yellow;
-                        sellText += $"{item.SellPrice,5} ";
+                        sellText += $"${item.SellPrice,5} ";
                         Console.ForegroundColor = ConsoleColor.Green;
                         sellText += $"{Inventory.GetItemCount(item.Name),3} ";
                         Console.ForegroundColor = ConsoleColor.Magenta;
                         sellText += $" {item.Icon}";
                     }
-                    sellText = sellText.PadRight(77);
+                    sellText = sellText.PadRight(78);
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine($"║{sellText}║");
                 }
@@ -124,7 +124,7 @@ namespace MohawkTerminalGame
                         var item = items[i];
                         Console.ForegroundColor = item.Stock > 0 ? ConsoleColor.White : ConsoleColor.DarkGray;
                         leftText += $"{i+1}. ";
-                        leftText += $"{item.Name,-10} ";
+                        leftText += $"{item.Name,-11} ";
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         leftText += $"{item.Price,5:C0} ";
                         Console.ForegroundColor = item.Stock > 0 ? ConsoleColor.Green : ConsoleColor.Red;
@@ -162,7 +162,7 @@ namespace MohawkTerminalGame
             else
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("╚═══════════════════════════════════════════════════════════════════════════════╝");
+                Console.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
             }
 
             Console.WriteLine();
@@ -236,8 +236,8 @@ namespace MohawkTerminalGame
             {
                 if (isSellMode)
                 {
-                    // Order to match unified inputs: Wheat, Carrot, Veal, Poultry, Pork
-                    var sellOrder = new string[] { "Wheat", "Carrot", "Veal", "Poultry", "Pork" };
+                    // Order to match unified inputs: Wheat, Carrot, Beef, Veal, Poultry, Pork
+                    var sellOrder = new string[] { "Wheat", "Carrot", "Beef", "Veal", "Poultry", "Pork" };
                     var sellableItems = sellOrder.Select(name => GameItems.GetByName(name)).ToList();
                     if (num >= 1 && num <= sellableItems.Count)
                     {
