@@ -73,15 +73,25 @@ public class TerminalGame
             case GameState.Story:
                 if (story.PlayAndWait())
                 {
-                    gameState = GameState.Field;
-                    if (isFirstStory)
+                    if (story.Mode == StoryMode.Ending)
                     {
-                        DayTimer.ResetDay();
-                        isFirstStory = false;
+                        gameState = GameState.TitleScreen;
+                        isFirstStory = true;
+                        story.Mode = StoryMode.Intro;
+                        hasDisplayedTitleScreen = false;
                     }
-                    Terminal.Clear();
-                    Field.Start();
-                    DayTimer.CheckAndDraw();
+                    else
+                    {
+                        gameState = GameState.Field;
+                        if (isFirstStory)
+                        {
+                            DayTimer.ResetDay();
+                            isFirstStory = false;
+                        }
+                        Terminal.Clear();
+                        Field.Start();
+                        DayTimer.CheckAndDraw();
+                    }
                 }
                 break;
 

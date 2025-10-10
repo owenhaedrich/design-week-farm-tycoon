@@ -15,8 +15,12 @@ namespace MohawkTerminalGame
         {
             if (needsRedraw)
             {
-                Show();
                 needsRedraw = false;
+                if (Show())
+                {
+                    needsRedraw = true;
+                    return true;
+                }
             }
 
             if (Console.KeyAvailable || Input.IsKeyPressed(ConsoleKey.Spacebar) || Input.IsKeyPressed(ConsoleKey.Enter))
@@ -28,11 +32,11 @@ namespace MohawkTerminalGame
             return false;
         }
 
-        private void Show()
+        private bool Show()
         {
             Terminal.Clear();
             Terminal.ForegroundColor = ConsoleColor.White;
-            Terminal.WriteLine("╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗");
+            Terminal.WriteLine("╔" + new string('═', 102) + "╗");
             Terminal.WriteLine("║                                                                                                      ║");
             Terminal.WriteLine("║                                     ! Farm Up !                                                      ║");
             Terminal.WriteLine("║                                                                                                      ║");
@@ -74,37 +78,70 @@ namespace MohawkTerminalGame
                     };
                     foreach (string line in storyLines)
                     {
-                        string formattedLine = "║  " + line.PadRight(99) + " ║";
-                        Terminal.WriteLine(formattedLine);
+                        string remaining = line;
+                        while (remaining.Length > 0)
+                        {
+                            string part;
+                            if (remaining.Length <= 99)
+                            {
+                                part = remaining;
+                                remaining = "";
+                            }
+                            else
+                            {
+                                int pos = remaining.LastIndexOf(' ', 99);
+                                if (pos == -1)
+                                    pos = 99;
+                                part = remaining.Substring(0, pos);
+                                remaining = remaining.Length > pos ? remaining.Substring(pos).TrimStart() : "";
+                            }
+                            string formattedLine = "║  " + part.PadRight(99) + " ║";
+                            Terminal.WriteLine(formattedLine);
+                            if (Input.IsKeyDown(ConsoleKey.M))
+                            {
+                                Terminal.UseRoboType = false;
+                                return true;
+                            }
+                        }
                     }
                     Terminal.UseRoboType = false;
                     break;
                 case StoryMode.Progress:
-                    Terminal.WriteLine("║  The day has ended on your farm!                                                                    ║");
-                   Terminal.WriteLine($"║  You have ${Inventory.Money} and ${Story.DailyPassiveIncome} from eggs.                                                         ║");
-                    Terminal.WriteLine("║  As night falls, you reflect on the hard work and look forward to tomorrow.                         ║");
+                    string progressContent1 = "The day has ended on your farm!";
+                    Terminal.WriteLine("║  " + progressContent1.PadRight(99) + " ║");
+                    string progressContent2 = $"You have ${Inventory.Money}. You made ${Story.DailyPassiveIncome} in passive income.";
+                    Terminal.WriteLine("║  " + progressContent2.PadRight(99) + " ║");
+                    string progressContent3 = "As night falls, you reflect on the hard work and look forward to tomorrow.";
+                    Terminal.WriteLine("║  " + progressContent3.PadRight(99) + " ║");
                     break;
                 case StoryMode.Ending:
-                    if (Inventory.Money > 1000)
+                    if (Inventory.Money > 1200)
                     {
-                        Terminal.WriteLine("║  Congratulations Tlzchangor!                                                                     ║");
-                        Terminal.WriteLine("║  You managed to pay off your debts completely! That’s almost unheard of!                         ║");
-                        Terminal.WriteLine("║  Having escaped the threat of rightfully being punished for your abhorrent crimes you are scot free to attempt a sequel of this whole zombie army thing!        ║");
-                        Terminal.WriteLine("║  Maybe this time the debt collectors need to be added to the horde…                              ║");
+                        Terminal.WriteLine("║  Congratulations Tlzchangor!                                                                         ║");
+                        Terminal.WriteLine("║  You managed to pay off your debts completely! That’s almost unheard of!                             ║");
+                        Terminal.WriteLine("║  Having escaped the threat of rightfully being punished for your abhorrent crimes                    ║");
+                        Terminal.WriteLine("║  you are scot free to attempt a sequel of this whole zombie army thing!                              ║");
+                        Terminal.WriteLine("║  Maybe this time the debt collectors need to be added to the horde…                                  ║");
                     }
-                    else if (Inventory.Money == 1000)
+                    else if (Inventory.Money >= 1000)
                     {
-                        Terminal.WriteLine("║  Well Tlzchangor,                                                                                ║");
-                        Terminal.WriteLine("║  you managed to keep the debt collectors off of you - though it cost you almost every last penny you had.                         ║");
-                        Terminal.WriteLine("║  Despite being safe from physical harm, you are NOT safe from the greatest danger of all: poverty. You will now be forced to spend the rest of your time in the Shade Vale toiling away and working a regular job instead of living your dream of creating vast hordes of lifeless corpses.        ║");
-                        Terminal.WriteLine("║  MBut hey, you’re still alive I suppose so Victory Accomplished?                                 ║");
+                        Terminal.WriteLine("║  Well Tlzchangor,                                                                                    ║");
+                        Terminal.WriteLine("║  you managed to keep the debt collectors off of you - though it cost you almost every last           ║");
+                        Terminal.WriteLine("║  penny you had.                                                                                      ║");
+                        Terminal.WriteLine("║  Despite being safe from physical harm, you are NOT safe from the greatest danger of all:            ║");
+                        Terminal.WriteLine("║  poverty. You will now be forced to spend the rest of your time in the Shade Vale toiling away       ║");
+                        Terminal.WriteLine("║  and working a regular job instead of living your dream of creating vast hordes of lifeless          ║");
+                        Terminal.WriteLine("║  corpses.                                                                                            ║");
+                        Terminal.WriteLine("║  MBut hey, you’re still alive I suppose so Victory Accomplished?                                     ║");
                     }
                     else if (Inventory.Money < 1000)
                     {
-                        Terminal.WriteLine("║  Uh oh… Those galloping horses spell the end for poor ol’ Tlzchangor.                            ║");
-                        Terminal.WriteLine("║  Well this is it I guess.The townsfolk approach and you doubt that they learned about forgiveness in the last 10 days.                         ║");
-                        Terminal.WriteLine("║  Well suppose it’s pretty justified to be completely fair to the townsfolk.They must think so because they’re very happy to end your crazed farming spree in a particularly violent manner.        ║");
-                        Terminal.WriteLine("║  Too bad you can’t resurrect YOURSELF because: YOU ARE DEAD…                             ║");
+                        Terminal.WriteLine("║  Uh oh… Those galloping horses spell the end for poor ol’ Tlzchangor.                                ║");
+                        Terminal.WriteLine("║  Well this is it I guess.The townsfolk approach and you doubt that they learned about forgiveness    ║");
+                        Terminal.WriteLine("║  in the last 10 days.                                                                                ║");
+                        Terminal.WriteLine("║  Well suppose it’s pretty justified to be completely fair to the townsfolk.They must think so        ║");
+                        Terminal.WriteLine("║  because they’re very happy to end your crazed farming spree in a particularly violent manner.       ║");
+                        Terminal.WriteLine("║  Too bad you can’t resurrect YOURSELF because: YOU ARE DEAD…                                         ║");
                     }
                     /*Terminal.WriteLine("║  Congratulations!                                                                                    ║");
                     Terminal.WriteLine("║  You have successfully completed 10 days of farming.                                                 ║");
@@ -112,11 +149,12 @@ namespace MohawkTerminalGame
                     break;
             }
 
-            Terminal.WriteLine("║                                                                                                          ║");
-            Terminal.WriteLine("║  Press any key to start a new day...                                                                     ║");
-            Terminal.WriteLine("║                                                                                                          ║");
-            Terminal.WriteLine("╚══════════════════════════════════════════════════════════════════════════════════════════════════════════╝");
+            Terminal.WriteLine("║                                                                                                      ║");
+            Terminal.WriteLine("║  Press the Enter key to continue...                                                                  ║");
+            Terminal.WriteLine("║                                                                                                      ║");
+            Terminal.WriteLine("╚" + new string('═', 102) + "╝");
             Terminal.ResetColor();
+            return false;
         }
     }
 }
