@@ -428,7 +428,125 @@ namespace MohawkTerminalGame
             return interactions;
         }
 
+        // Build string grid for bonus detection
+        static string[,] BuildGridNames()
+        {
+            string[,] grid = new string[logicalGrid.Height, logicalGrid.Width];
+            for (int y = 0; y < logicalGrid.Height; y++)
+            {
+                for (int x = 0; x < logicalGrid.Width; x++)
+                {
+                    var space = logicalGrid.GetSpace(x, y);
+                    if (space.TileType == TileType.Pig)
+                    {
+                        grid[y, x] = "Pig";
+                    }
+                    else if (space.TileType == TileType.Carrot)
+                    {
+                        grid[y, x] = "Carrot";
+                    }
+                    else if (space.TileType == TileType.Cow)
+                    {
+                        grid[y, x] = "Cow";
+                    }
+                    else
+                    {
+                        grid[y, x] = "";
+                    }
+                }
+            }
+            return grid;
+        }
 
+        // Detect Pig-Carrot adjacency bonuses
+        static int DetectPigBonuses(string[,] grid)
+        {
+            int bonusCount = 0;
+            int rows = grid.GetLength(0);
+            int cols = grid.GetLength(1);
+
+            // Check horizontal adjacencies (Pig-Carrot next to each other in row)
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols - 1; col++)
+                {
+                    if ((grid[row, col] == "Pig" && grid[row, col + 1] == "Carrot") ||
+                        (grid[row, col] == "Carrot" && grid[row, col + 1] == "Pig"))
+                    {
+                        bonusCount++;
+                    }
+                }
+            }
+
+            // Check vertical adjacencies (Pig-Carrot above/below each other in column)
+            for (int col = 0; col < cols; col++)
+            {
+                for (int row = 0; row < rows - 1; row++)
+                {
+                    if ((grid[row, col] == "Pig" && grid[row + 1, col] == "Carrot") ||
+                        (grid[row, col] == "Carrot" && grid[row + 1, col] == "Pig"))
+                    {
+                        bonusCount++;
+                    }
+                }
+            }
+
+            return bonusCount;
+        }
+
+        // Detect three consecutive Cow bonuses
+        static int DetectCowBonuses(string[,] grid)
+        {
+            int bonusCount = 0;
+            int rows = grid.GetLength(0);
+            int cols = grid.GetLength(1);
+
+            // Check horizontal three-in-a-row
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols - 2; col++)
+                {
+                    if (grid[row, col] == "Cow" && grid[row, col + 1] == "Cow" && grid[row, col + 2] == "Cow")
+                    {
+                        bonusCount++;
+                    }
+                }
+            }
+
+            // Check vertical three-in-a-column
+            for (int col = 0; col < cols; col++)
+            {
+                for (int row = 0; row < rows - 2; row++)
+                {
+                    if (grid[row, col] == "Cow" && grid[row + 1, col] == "Cow" && grid[row + 2, col] == "Cow")
+                    {
+                        bonusCount++;
+                    }
+                }
+            }
+
+            return bonusCount;
+        }
+
+        // Perform grid bonus checks and apply money rewards
+        public static void PerformGridBonusChecks()
+        {
+            string[,] grid = BuildGridNames();
+
+            // Detect Pig bonuses
+            int pigBonuses = DetectPigBonuses(grid);
+            if (pigBonuses > 0)
+            {
+                Inventory.AddMoney(pigBonuses * 20);
+            }
+
+            // Detect Cow bonuses
+            int cowBonuses = DetectCowBonuses(grid);
+            if (cowBonuses > 0)
+            {
+                Inventory.AddMoney(cowBonuses * 20);
+            }
+        }
 
 
     }

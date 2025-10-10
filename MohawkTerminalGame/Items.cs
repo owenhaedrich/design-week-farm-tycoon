@@ -119,33 +119,6 @@ namespace MohawkTerminalGame
         public override void AdvanceTurn()
         {
             base.AdvanceTurn();
-
-            int rows = gridBonus.GetLength(0);
-            int cols = gridBonus.GetLength(1);
-
-            for (int row = 0; row < rows; row++)
-            {
-                for (int col = 0; col < cols - 2; col++)
-                {
-                    if (gridBonus[row, col] == "Pig" && gridBonus[row, col + 1] == "Carrot" ||
-                        gridBonus[row, col] == "Carrot" && gridBonus[row, col + 1] == "Pig")
-                    {
-                        Inventory.AddMoney(20);
-                    }
-                }
-            }
-
-            for (int col = 0; col < cols; col++)
-            {
-                for (int row = 0; row < rows - 2; row++)
-                {
-                    if (gridBonus[row, col] == "Pig" && gridBonus[row + 1, col] == "Carrot" ||
-                        gridBonus[row, col] == "Pig" && gridBonus[row + 1, col] == "Carrot")
-                    {
-                        Inventory.AddMoney(20);
-                    }
-                }
-            }
         }
     }
 
@@ -174,32 +147,6 @@ namespace MohawkTerminalGame
         public override void AdvanceTurn()
         {
             base.AdvanceTurn();
-
-            int rows = gridBonus.GetLength(0);
-            int cols = gridBonus.GetLength(1);
-
-            // 3 cow bonus (milk)
-            for (int row = 0; row < rows; row++)
-            {
-                for (int col = 0; col < cols - 2; col++)
-                {
-                    if (gridBonus[row, col] == "Cow" && gridBonus[row, col + 1] == "Cow" && gridBonus[row, col + 2] == "Cow")
-                    {
-                        Inventory.AddMoney(20);
-                    }
-                }
-            }
-
-            for (int col = 0; col < cols; col++)
-            {
-                for (int row = 0; row < rows - 2; row++)
-                {
-                    if (gridBonus[row, col] == "Cow" && gridBonus[row + 1, col] == "Cow" && gridBonus[row + 2, col] == "Cow")
-                    {
-                        Inventory.AddMoney(20);
-                    }
-                }
-            }
         }
     }
 
