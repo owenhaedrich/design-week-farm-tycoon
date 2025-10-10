@@ -3,18 +3,20 @@ using DefaultNamespace;
 
 namespace MohawkTerminalGame;
 
-public enum GameState { Story, Field, Shop, Paused }
+public enum GameState { Story, Field, Shop, Paused, TitleScreen }
 
 public class TerminalGame
 {
-    GameState gameState = GameState.Story;
+    GameState gameState = GameState.TitleScreen;
     GameState gameStateBeforePause = GameState.Story;
     bool justPaused = false;
 
     Shop shop = new Shop();
     Story story = new Story();
+    TitleScreen titleScreen = new TitleScreen();
 
     bool isFirstStory = true;
+    bool hasDisplayedTitleScreen = false;
 
     /// Run once before Execute begins
     public void Setup()
@@ -122,6 +124,10 @@ public class TerminalGame
 
                 RunShop();
                 break;
+
+            case GameState.TitleScreen:
+                HandleTitleScreen();
+                break;
         }
     }
 
@@ -152,5 +158,22 @@ public class TerminalGame
             return;
         }
         // else None, do nothing
+    }
+
+    private void HandleTitleScreen()
+    {
+        if (!hasDisplayedTitleScreen)
+        {
+            Terminal.Clear();
+            titleScreen.Display();
+            hasDisplayedTitleScreen = true;
+        }
+
+        if (Input.IsKeyPressed(ConsoleKey.Spacebar) || Input.IsKeyPressed(ConsoleKey.Enter))
+        {
+            gameState = GameState.Story;
+            hasDisplayedTitleScreen = false;
+            story.Mode = StoryMode.Intro;
+        }
     }
 }
