@@ -111,7 +111,7 @@ namespace MohawkTerminalGame
                     }
                     sellText = sellText.PadRight(78);
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine($"║{sellText} ║");
+                    Console.WriteLine($"║{sellText}║");
                 }
                 else
                 {
@@ -171,7 +171,7 @@ namespace MohawkTerminalGame
             Console.WriteLine(CenterText(moneyText, leftWidth + rightWidth + 3));
 
             Console.ForegroundColor = ConsoleColor.Yellow;
-            string instruction = isSellMode ? "Press number to sell 1 of item, 'B' to switch to buy, 'E' to leave" : "Press number to buy item, 'S' to switch to sell, 'E' to leave";
+            string instruction = isSellMode ? "Press number to sell item, [S]witch to buy mode, or [E]xit" : "Press number to buy item, [S]witch to sell mode, or [E]xit";
             Console.WriteLine(CenterText(instruction, leftWidth + rightWidth + 3));
 
             Console.ForegroundColor = ConsoleColor.White;
