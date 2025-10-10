@@ -134,7 +134,7 @@ namespace MohawkTerminalGame
             switch (tileType)
             {
                 case TileType.Dirt: return ConsoleColor.DarkYellow;
-                case TileType.WheatSeed: case TileType.Wheat: return ConsoleColor.Green;
+                case TileType.WheatSeed: case TileType.Wheat: return ConsoleColor.White;
                 case TileType.CarrotSeed: case TileType.Carrot: return ConsoleColor.DarkYellow;
                 case TileType.Calf: return ConsoleColor.DarkYellow;
                 case TileType.Cow: return ConsoleColor.White;
