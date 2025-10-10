@@ -28,9 +28,11 @@ namespace MohawkTerminalGame
             tick = maxTick;
             dayExpiredFlag = false;
             TimerHasChanged = true;
-            // Track passive income during UpdateGrowth (which calls AdvanceTurn)
+            // Track passive income during UpdateGrowth and grid bonuses
             int moneyBefore = Inventory.Money;
             Field.UpdateGrowth();
+            // Check for grid bonuses
+            Field.PerformGridBonusChecks();
             int moneyAfter = Inventory.Money;
             Story.DailyPassiveIncome = moneyAfter - moneyBefore;
             // Reset boughtToday for all items
