@@ -143,10 +143,12 @@ namespace MohawkTerminalGame
                         Terminal.WriteLine("║  because they’re very happy to end your crazed farming spree in a particularly violent manner.       ║");
                         Terminal.WriteLine("║  Too bad you can’t resurrect YOURSELF because: YOU ARE DEAD…                                         ║");
                     }
-                    /*Terminal.WriteLine("║  Congratulations!                                                                                    ║");
-                    Terminal.WriteLine("║  You have successfully completed 10 days of farming.                                                 ║");
-                    Terminal.WriteLine("║  ---------                                                                                           ║");*/
-                    break;
+                    Terminal.WriteLine("║                                                                                                      ║");
+                    Terminal.WriteLine("║  Game over! Press the ESC key to quit.                                                               ║");
+                    Terminal.WriteLine("║                                                                                                      ║");
+                    Terminal.WriteLine("╚" + new string('═', 102) + "╝");
+                    Terminal.ResetColor();
+                    return false;
             }
 
             Terminal.WriteLine("║                                                                                                      ║");

@@ -75,10 +75,10 @@ public class TerminalGame
                 {
                     if (story.Mode == StoryMode.Ending)
                     {
-                        gameState = GameState.TitleScreen;
-                        isFirstStory = true;
-                        story.Mode = StoryMode.Intro;
-                        hasDisplayedTitleScreen = false;
+                        //gameState = GameState.TitleScreen;
+                        //isFirstStory = true;
+                        //story.Mode = StoryMode.Intro;
+                        //hasDisplayedTitleScreen = false;
                     }
                     else
                     {
@@ -104,7 +104,7 @@ public class TerminalGame
                 {
                     DayTimer.ResetDay();
                     gameState = GameState.Story;
-                    story.Mode = DayTimer.DayNumber >= 10 ? StoryMode.Ending : StoryMode.Progress;
+                    story.Mode = DayTimer.DayNumber > 10 ? StoryMode.Ending : StoryMode.Progress;
                     break;
                 }
 
@@ -128,7 +128,7 @@ public class TerminalGame
                 {
                     DayTimer.ResetDay();
                     gameState = GameState.Story;
-                    story.Mode = DayTimer.DayNumber >= 10 ? StoryMode.Ending : StoryMode.Progress;
+                    story.Mode = DayTimer.DayNumber > 10 ? StoryMode.Ending : StoryMode.Progress;
                     break;
                 }
 
