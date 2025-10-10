@@ -24,6 +24,7 @@ namespace MohawkTerminalGame
 
         public static void ResetDay()
         {
+            SoundEffects.StartDay();
             currentTimer = maxTimer;
             tick = maxTick;
             dayExpiredFlag = false;

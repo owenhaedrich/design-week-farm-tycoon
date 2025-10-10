@@ -8,18 +8,18 @@ namespace MohawkTerminalGame
     /// </summary>
     public static class Terminal
     {
-        static bool isCursorVisible = true;
+        private static bool isCursorVisible = true;
 
-        delegate void WriteAction(string value);
-        delegate void WriteObjAction(object obj);
-        static WriteAction BasicWrite => UseRoboType ? RoboWrite : Console.Write;
-        static WriteAction BasicWriteLine => UseRoboType ? RoboWriteLine : Console.WriteLine;
-        static WriteObjAction BasicWriteObj => UseRoboType ? RoboWrite : Console.Write;
-        static WriteObjAction BasicWriteLineObj => UseRoboType ? RoboWriteLine : Console.WriteLine;
-        static WriteAction OnWrite => WriteWithWordBreaks ? FancyWrite : BasicWrite;
-        static WriteAction OnWriteLine => WriteWithWordBreaks ? FancyWriteLine : BasicWriteLine;
-        static WriteObjAction OnWriteObj => WriteWithWordBreaks ? FancyWrite : BasicWriteObj;
-        static WriteObjAction OnWriteLineObj => WriteWithWordBreaks ? FancyWriteLine : BasicWriteLineObj;
+        private delegate void WriteAction(string value);
+        private delegate void WriteObjAction(object obj);
+        private static WriteAction BasicWrite => UseRoboType ? RoboWrite : Console.Write;
+        private static WriteAction BasicWriteLine => UseRoboType ? RoboWriteLine : Console.WriteLine;
+        private static WriteObjAction BasicWriteObj => UseRoboType ? RoboWrite : Console.Write;
+        private static WriteObjAction BasicWriteLineObj => UseRoboType ? RoboWriteLine : Console.WriteLine;
+        private static WriteAction OnWrite => WriteWithWordBreaks ? FancyWrite : BasicWrite;
+        private static WriteAction OnWriteLine => WriteWithWordBreaks ? FancyWriteLine : BasicWriteLine;
+        private static WriteObjAction OnWriteObj => WriteWithWordBreaks ? FancyWrite : BasicWriteObj;
+        private static WriteObjAction OnWriteLineObj => WriteWithWordBreaks ? FancyWriteLine : BasicWriteLineObj;
 
 
         /// <summary>
@@ -217,7 +217,7 @@ namespace MohawkTerminalGame
 
 
         // "Auto-type" looking feature.
-        static void RoboWrite(string value)
+        private static void RoboWrite(string value)
         {
             char[] chars = value.ToCharArray();
             foreach (char @char in chars)
@@ -226,17 +226,17 @@ namespace MohawkTerminalGame
                 Thread.Sleep(RoboTypeIntervalMilliseconds);
             }
         }
-        static void RoboWriteLine(string value)
+        private static void RoboWriteLine(string value)
         {
             RoboWrite(value);
             Console.Write('\n');
             Thread.Sleep(RoboTypeIntervalMilliseconds);
         }
-        static void RoboWrite(object obj) => RoboWrite(obj.ToString() ?? string.Empty);
-        static void RoboWriteLine(object obj) => RoboWriteLine(obj.ToString() ?? string.Empty);
+        private static void RoboWrite(object obj) => RoboWrite(obj.ToString() ?? string.Empty);
+        private static void RoboWriteLine(object obj) => RoboWriteLine(obj.ToString() ?? string.Empty);
 
         // Word break writting
-        static void FancyWrite(string value)
+        private static void FancyWrite(string value)
         {
             string[] elements = value.Split(WordBreakCharacter);
             for (int i = 0; i < elements.Length; i++)
@@ -255,23 +255,23 @@ namespace MohawkTerminalGame
                     BasicWriteObj(WordBreakCharacter);
             }
         }
-        static void FancyWrite(object obj) => FancyWrite(obj.ToString() ?? string.Empty);
-        static void FancyWriteLine(string value)
+        private static void FancyWrite(object obj) => FancyWrite(obj.ToString() ?? string.Empty);
+        private static void FancyWriteLine(string value)
         {
             FancyWrite(value);
             Console.WriteLine();
         }
-        static void FancyWriteLine(object obj) => FancyWriteLine(obj.ToString() ?? string.Empty);
+        private static void FancyWriteLine(object obj) => FancyWriteLine(obj.ToString() ?? string.Empty);
 
         // Terminal writing but with color support
-        static void Write(Action consoleWrite, ConsoleColor foregroundColor)
+        private static void Write(Action consoleWrite, ConsoleColor foregroundColor)
         {
             var fgColor = Console.ForegroundColor;
             Console.ForegroundColor = foregroundColor;
             consoleWrite.Invoke();
             Console.ForegroundColor = fgColor;
         }
-        static void Write(Action consoleWrite, ConsoleColor foregroundColor, ConsoleColor backgroundColor)
+        private static void Write(Action consoleWrite, ConsoleColor foregroundColor, ConsoleColor backgroundColor)
         {
             var fgColor = Console.ForegroundColor;
             var bgColor = Console.BackgroundColor;

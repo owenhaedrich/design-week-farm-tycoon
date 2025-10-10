@@ -16,7 +16,7 @@ public class TerminalGridBase<T>
     ///     Grid width in column values (values can be multiple columns / characters).
     /// </summary>
     public int Width { get; init; }
-    
+
     /// <summary>
     ///     Grid height in rows.
     /// </summary>
@@ -89,6 +89,15 @@ public class TerminalGridBase<T>
     ///     Set all values in table to <paramref name="value"/>.
     /// </summary>
     /// <param name="value">The value to assign.</param>
+    public void Set(T value, int x, int y)
+    {
+        BackingArray[x, y] = value;
+    }
+
+    /// <summary>
+    ///     Set all values in table to <paramref name="value"/>.
+    /// </summary>
+    /// <param name="value">The value to assign.</param>
     public void SetAll(T value)
     {
         for (int y = 0; y < Height; y++)
@@ -145,8 +154,8 @@ public class TerminalGridBase<T>
     {
         int minX = int.Max(area.StartX, 0);
         int minY = int.Max(area.StartY, 0);
-        int maxX = int.Min(area.EnxOffset, Width);
-        int maxY = int.Min(area.EnyOffset, Height);
+        int maxX = int.Min(area.EndX, Width);
+        int maxY = int.Min(area.EndY, Height);
         for (int y = minY; y < maxY; y++)
         {
             for (int x = minX; x < maxX; x++)
@@ -212,14 +221,14 @@ public class TerminalGridBase<T>
 
     public static TerminalGridBase<T> CopyArea(TerminalGridBase<T> src, Rectangle area)
     {
-        if (area.EnxOffset > src.Width)
+        if (area.EndX > src.Width)
         {
-            string msg = $"{nameof(area)}.{nameof(area.EnxOffset)} value {area.EnxOffset} is larger than {nameof(src)} width {src.Width}.";
+            string msg = $"{nameof(area)}.{nameof(area.EndX)} value {area.EndX} is larger than {nameof(src)} width {src.Width}.";
             throw new ArgumentOutOfRangeException(msg);
         }
-        if (area.EnyOffset > src.Height)
+        if (area.EndY > src.Height)
         {
-            string msg = $"{nameof(area)}.{nameof(area.EnyOffset)} value {area.EnyOffset} is larger than {nameof(src)} height {src.Height}.";
+            string msg = $"{nameof(area)}.{nameof(area.EndY)} value {area.EndY} is larger than {nameof(src)} height {src.Height}.";
             throw new ArgumentOutOfRangeException(msg);
         }
 
@@ -253,14 +262,14 @@ public class TerminalGridBase<T>
     /// </exception>
     public static void CopyFromTo(TerminalGridBase<T> src, Rectangle srcRect, TerminalGridBase<T> dest, int destX, int destY)
     {
-        if (srcRect.EnxOffset > src.Width)
+        if (srcRect.EndX > src.Width)
         {
-            string msg = $"{nameof(srcRect)}.{nameof(srcRect.EnxOffset)} value {srcRect.EnxOffset} is larger than {nameof(src)} width {src.Width}.";
+            string msg = $"{nameof(srcRect)}.{nameof(srcRect.EndX)} value {srcRect.EndX} is larger than {nameof(src)} width {src.Width}.";
             throw new ArgumentOutOfRangeException(msg);
         }
-        if (srcRect.EnyOffset > src.Height)
+        if (srcRect.EndY > src.Height)
         {
-            string msg = $"{nameof(srcRect)}.{nameof(srcRect.EnyOffset)} value {srcRect.EnyOffset} is larger than {nameof(src)} height {src.Height}.";
+            string msg = $"{nameof(srcRect)}.{nameof(srcRect.EndY)} value {srcRect.EndY} is larger than {nameof(src)} height {src.Height}.";
             throw new ArgumentOutOfRangeException(msg);
         }
 

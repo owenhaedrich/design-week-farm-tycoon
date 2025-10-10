@@ -9,11 +9,11 @@ namespace MohawkTerminalGame
     /// </summary>
     internal class Program
     {
-        static readonly System.Timers.Timer gameLoopTimer = new();
-        static TerminalGame? game;
-        static bool CanGameExecuteTick = true;
-        static int targetFPS = 20;
-        static TerminalExecuteMode terminalMode = TerminalExecuteMode.ExecuteOnce;
+        private static readonly System.Timers.Timer gameLoopTimer = new();
+        private static TerminalGame? game;
+        private static bool CanGameExecuteTick = true;
+        private static int targetFPS = 20;
+        private static TerminalExecuteMode terminalMode = TerminalExecuteMode.ExecuteOnce;
 
         /// <summary>
         ///     The target frames per second the terminal aims to run at.
@@ -122,7 +122,7 @@ namespace MohawkTerminalGame
             Environment.Exit(0);
         }
 
-        static void GameLoopTimerEvents(object? o, ElapsedEventArgs sender)
+        private static void GameLoopTimerEvents(object? o, ElapsedEventArgs sender)
         {
             CanGameExecuteTick = true;
         }

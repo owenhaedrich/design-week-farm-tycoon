@@ -13,9 +13,9 @@ public struct Rectangle
     public int h;
 
     public readonly int StartX => x;
-    public readonly int EnxOffset => x + w;
+    public readonly int EndX => x + w;
     public readonly int StartY => y;
-    public readonly int EnyOffset => y + h;
+    public readonly int EndY => y + h;
 
     public Rectangle()
     {

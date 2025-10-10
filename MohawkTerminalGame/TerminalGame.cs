@@ -27,6 +27,8 @@ public class TerminalGame
         Terminal.CursorVisible = false;
         Terminal.SetTitle("Title");
 
+        SoundEffects.LoadAll();
+
         story.Mode = StoryMode.Intro;
     }
 

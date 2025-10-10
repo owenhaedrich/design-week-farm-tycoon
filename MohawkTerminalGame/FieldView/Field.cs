@@ -273,6 +273,26 @@ namespace MohawkTerminalGame
             // Reapply highlight (the tile placement overwrote it)
             ApplySelectionVisual();
 
+            // Play placement sound
+            switch (tileType)
+            {
+                case TileType.WheatSeed:
+                    SoundEffects.PlaceWheat();
+                    break;
+                case TileType.CarrotSeed:
+                    SoundEffects.PlaceCarrot();
+                    break;
+                case TileType.Calf:
+                    SoundEffects.PlaceCalf();
+                    break;
+                case TileType.Chicken:
+                    SoundEffects.PlaceChicken();
+                    break;
+                case TileType.Piglet:
+                    SoundEffects.PlacePiglet();
+                    break;
+            }
+
             // Update interactions
             FieldInfo.OnSelectionChanged();
         }
@@ -307,6 +327,7 @@ namespace MohawkTerminalGame
             if (harvestName != null)
             {
                 Inventory.AddItem(harvestName, 1);
+                SoundEffects.Harvest();
                 logicalGrid.SetTileType(selectionX, selectionY, TileType.Dirt);
                 // Redraw the tile to dirt
                 DrawTile(selectionX, selectionY, TileType.Dirt);
@@ -324,7 +345,7 @@ namespace MohawkTerminalGame
                 int wheatCount = Inventory.GetItemCount(GameItems.Wheat.Name);
                 if (wheatCount > 0)
                 {
-                    // Consume wheat to grow calf into cow
+                // Consume wheat to grow calf into cow
                     Inventory.RemoveItem(GameItems.Wheat.Name, 1);
                     // Turn calf to cow
                     logicalGrid.SetTileType(selectionX, selectionY, TileType.Cow);
@@ -332,6 +353,7 @@ namespace MohawkTerminalGame
                     DrawTile(selectionX, selectionY, TileType.Cow);
                     // Reapply highlight
                     ApplySelectionVisual();
+                    SoundEffects.GrowCow();
                     FieldInfo.OnSelectionChanged();
                 }
             }
@@ -349,6 +371,7 @@ namespace MohawkTerminalGame
                     DrawTile(selectionX, selectionY, TileType.Pig);
                     // Reapply highlight
                     ApplySelectionVisual();
+                    SoundEffects.GrowPig();
                     FieldInfo.OnSelectionChanged();
                 }
             }

@@ -64,7 +64,7 @@ namespace MohawkTerminalGame
                         "don’t currently have.",
                         "",
                         "Now you have demonic debt collectors hot on your tail doing what they do best. You",
-                        "have 5 days to pay up for your undead army, or else it seems like they’re keen to let the",
+                        "have 10 days to pay up for your undead army, or else it seems like they’re keen to let the",
                         "general public know where to find you and how exactly to repay you.",
                         "",
                         "Getting a job would be harder than it looks, considering most people don’t like it when",
@@ -74,6 +74,7 @@ namespace MohawkTerminalGame
                         "money to the debt collectors!",
                         "",
                         "It would maybe be in your best interest to start sooner rather than later.",
+                        "If you don't have $1000 in 10 days, you are doomed.",
                         ""
                     };
                     foreach (string line in storyLines)
@@ -132,7 +133,7 @@ namespace MohawkTerminalGame
                         Terminal.WriteLine("║  poverty. You will now be forced to spend the rest of your time in the Shade Vale toiling away       ║");
                         Terminal.WriteLine("║  and working a regular job instead of living your dream of creating vast hordes of lifeless          ║");
                         Terminal.WriteLine("║  corpses.                                                                                            ║");
-                        Terminal.WriteLine("║  MBut hey, you’re still alive I suppose so Victory Accomplished?                                     ║");
+                        Terminal.WriteLine("║  But hey, you’re still alive I suppose so Victory Accomplished?                                     ║");
                     }
                     else if (Inventory.Money < 1000)
                     {

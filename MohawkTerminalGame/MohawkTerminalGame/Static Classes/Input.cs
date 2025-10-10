@@ -9,9 +9,9 @@ namespace MohawkTerminalGame
     /// </summary>
     public static class Input
     {
-        readonly static Thread InputThread;
-        readonly static List<ConsoleKey> LastFrameKeys = [];
-        readonly static List<ConsoleKey> CurrentFrameKeys = [];
+        private readonly static Thread InputThread;
+        private readonly static List<ConsoleKey> LastFrameKeys = [];
+        private readonly static List<ConsoleKey> CurrentFrameKeys = [];
 
         /// <summary>
         ///     Called to reset current frame inputs.
@@ -92,11 +92,11 @@ namespace MohawkTerminalGame
             CreateInputThread();
         }
 
-        static Thread CreateInputThread()
+        private static Thread CreateInputThread()
         {
             if (InputThread != null)
             {
-                string msg = "Input thread alreayOffset exists!";
+                string msg = "Input thread already exists!";
                 throw new Exception(msg);
             }
 

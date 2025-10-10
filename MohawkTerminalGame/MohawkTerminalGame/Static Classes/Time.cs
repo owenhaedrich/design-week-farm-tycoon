@@ -8,7 +8,7 @@ namespace MohawkTerminalGame;
 /// </summary>
 public static class Time
 {
-    static readonly Stopwatch stopwatch = new();
+    private static readonly Stopwatch stopwatch = new();
 
     /// <summary>
     ///     If true, the time starts once the program begins.

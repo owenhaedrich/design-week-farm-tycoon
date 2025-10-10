@@ -271,6 +271,7 @@ namespace MohawkTerminalGame
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine($"Bought a {item.Name}!");
                         Console.ResetColor();
+                        SoundEffects.Buy();
                         return ShopInputResult.Handled;
                     }
                     else
@@ -311,6 +312,7 @@ namespace MohawkTerminalGame
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"Sold {amount} {item.Name} for ${earn}!");
                 Console.ResetColor();
+                SoundEffects.GetMoney();
             }
             else
             {
